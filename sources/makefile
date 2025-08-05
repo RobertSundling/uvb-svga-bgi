@@ -1,7 +1,9 @@
+# [Comments translated from German to English]
+
 #
-# Makefile fÅr den SVGA BGI-Treiber
+# Makefile for the SVGA BGI driver
 #
-# Uz am 17.08.1994
+# Uz on 17.08.1994
 #
 
 
@@ -10,7 +12,7 @@
 
 
 # ---------------------------------------------------------------
-# Dummy-AbhÑngigkeit
+# Dummy dependency
 
 all:            svgabgi svgabp7 svga286bgi svga286bp7 svga386bgi svga386bp7 obj dist
 
@@ -118,7 +120,7 @@ svga3386.obj:   SVGA.ASM
 
 
 # ---------------------------------------------------------------
-# Dummy-Targets
+# Dummy targets
 
 obj:
                 -del *.bak
@@ -145,5 +147,3 @@ dist:
 		-del *.bgi
 		-del *.bp7
 
-
-
