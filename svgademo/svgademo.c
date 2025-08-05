@@ -1,21 +1,23 @@
+/* [Comments and strings translated from German to English] */
+
 /**********************************************************************
 
-svgademo.c - Demo einiger Mîglichkeiten des SVGA.BGI-Treibers
+svgademo.c - Demo of some possibilities of the SVGA.BGI driver
 
-In tiefer Dankbarkeit fÅr den tollen Treiber und zur StÑrkung der
-C-Fraktion developed by
+In deep gratitude for the great driver and to strengthen the
+C-fraction developed by
 
     Friedlieb Jung-Merkelbach
-    Burbachstra·e 41
+    Burbachstra√üe 41
     W-5270 Gummersbach 31
 
-Und nun der gleiche Spruch wie in palette.c, mittels cut&paste reinkopiert:
-Der Code hat mich zwar einige Arbeit gekostet, ist aber andererseits sicher
-nicht geeignet, die Welt zu retten. Daher habe ich nichts gegen eine Nutzung,
-auch innerhalb kommerzieller Programme.
-Nett wÑre aber bei Verbesserungen/Korrekturen oder interessanten neuen Paletten
-mitsamt Anwendungsbeispiel die öbersendung einer entsprechenden Diskette an
-meine obenstehende Adresse.  :-)
+And now the same saying as in palette.c, copied in via cut&paste:
+The code did cost me some work, but on the other hand is certainly
+not suitable to save the world. Therefore, I have nothing against its use,
+even within commercial programs.
+However, it would be nice, in case of improvements/corrections or interesting
+new palettes with application example, to send a corresponding diskette to
+my above address.  :-)
 
 **********************************************************************/
 
@@ -38,7 +40,7 @@ int GraphDriver,
     MaxY;
 
 
-void quit(void)  /* Programmabbruch durch Ctrl-Break oder ESC */
+void quit(void) /* Program abort via Ctrl-Break or ESC */
 {
     closegraph();
     printf("Bye...");
@@ -46,11 +48,11 @@ void quit(void)  /* Programmabbruch durch Ctrl-Break oder ESC */
 }
 
 
-void wait(int sek) /* wartet auf Tastendruck oder bis zu sek Sekunden */
+void wait(int sek) /* waits for key press or up to sek seconds */
 {
     time_t ticks = clock();
 
-    while (kbhit())  /* Tastaturpuffer leeren, ESC auswerten */
+    while (kbhit())  /* Clear keyboard buffer, evaluate ESC */
         if (getch() == 27) /* Escape */
             quit();
 
@@ -60,7 +62,7 @@ void wait(int sek) /* wartet auf Tastendruck oder bis zu sek Sekunden */
 }
 
 
-/* zeigt (spalten * zeilen) Farben am Bildschirm an */
+/* displays (columns * rows) colors on the screen */
 void displayColors(int spalten, int zeilen)
 {
     int i,
@@ -69,7 +71,7 @@ void displayColors(int spalten, int zeilen)
         x = 0;
 
     if (spalten * zeilen != 256)
-        return; /* étsch! */
+        return; /* Gotcha! */
 
     for (i = 0; i < spalten; i++)
     {
@@ -88,19 +90,19 @@ void displayColors(int spalten, int zeilen)
 
 
 
-void far *msg_buf = NULL;      /* Imagebuffer fÅr msg_on() und msg_off() */
-int      msg_x,                /*  - dessen linke obere Ecke, x */
-         msg_y;                /*  - dessen linke obere Ecke, y */
+void far *msg_buf = NULL;      /* Image buffer for msg_on() and msg_off() */
+int      msg_x,                /*  - its upper left corner, x */
+         msg_y;                /*  - its upper left corner, y */
 
-void msg_on(char *msg)  /* gibt eine Meldung in der Bildschirmmitte aus */
+void msg_on(char *msg)  /* outputs a message in the center of the screen */
 {
     int w,
         h;
     int end_x,
         end_y;
 
-    if (MaxX <= 320)  /* wg. negativen x-Koordinaten und */
-        return;       /* vielleicht nicht korrektem Clipping */
+    if (MaxX <= 320)  /* due to negative x-coordinates and */
+        return;       /* possibly incorrect clipping */
 
     settextjustify(CENTER_TEXT, CENTER_TEXT);
     settextstyle(DEFAULT_FONT, HORIZ_DIR, 1);
@@ -120,7 +122,7 @@ void msg_on(char *msg)  /* gibt eine Meldung in der Bildschirmmitte aus */
 }
 
 
-void msg_off(void)   /* schaltet mit msg_on() erzeugte Meldung wieder aus */
+void msg_off(void)   /* removes the message created with msg_on() */
 {
     if (msg_buf == NULL)
         return;
@@ -133,12 +135,12 @@ void msg_off(void)   /* schaltet mit msg_on() erzeugte Meldung wieder aus */
 
 
 void ShadowText(int x, int y, int tfarbe, int sfarbe, char *text)
-{   /* gibt schattierten Text aus */
+{ /* outputs shadowed text */
     int altefarbe = getcolor();
 
     setcolor(sfarbe);
-    outtextxy(x + 1, y + 1, text);        /* dezent */
-    /* outtextxy(x + 2, y + 2, text); */  /* weniger dezent */
+    outtextxy(x + 1, y + 1, text);        /* subtle */
+    /* outtextxy(x + 2, y + 2, text); */  /* less subtle */
     setcolor(tfarbe);
     outtextxy(x, y, text);
     setcolor(altefarbe);
@@ -147,16 +149,16 @@ void ShadowText(int x, int y, int tfarbe, int sfarbe, char *text)
 
 
 
-void errex(char *text) /* Beendet das Programm mit einer Fehlermeldung */
+void errex(char *text) /* Ends the program with an error message */
 {
-    printf("%s.\nProgramm erfordert VGA-Karte.\n", text);
+    printf("%s.\nProgram requires VGA card.\n", text);
     exit(1);
 }
 
 
 typedef void (*VoidFunPtr) (void);
 
-/* ruft showfunc auf, zeigt text an und wartet */
+/* calls showfunc, displays text and waits */
 void show(VoidFunPtr showfunc, char *text)
 {
     if (showfunc != NULL)
@@ -169,32 +171,32 @@ void show(VoidFunPtr showfunc, char *text)
 }
 
 
-void init(void)   /* initialisiert die Grafik */
+void init(void) /* initializes graphics */
 {
     extern void _Cdecl SVGA_driver(void);
 
     if ((GraphDriver = installuserdriver("SVGA", NULL)) < 0)
-        errex("Treiber kann nicht installiert werden");
+        errex("Driver cannot be installed");
     if (registerbgidriver(SVGA_driver) < 0)
-        errex("Treiber kann nicht registriert werden");
+        errex("Driver cannot be registered");
     if (registerbgifont(sansserif_font) < 0)
-        errex("Zeichensatz kann nicht registriert werden");
+        errex("Font cannot be registered");
     initgraph(&GraphDriver, &GraphMode, "");
     if (graphresult() != grOk )
-        errex("Grafik kann nicht initialisiert werden");
+        errex("Graphics cannot be initialized");
 
     /*
-     *  Abfrage auf Modus 0. msg_on() wÅrde sonst Åber den Bildschirmrand
-     *  schreiben, was Åbelste Folgen haben kann. Ausprobieren!
+     *  Query for mode 0. msg_on() would otherwise write beyond the screen edge,
+     *  which can have the worst consequences. Try it!
      */
     if ((MaxX = getmaxx()) <= 320)
     {
         int gm = getgraphmode();
 
         restorecrtmode();
-        printf("Ihre VGA-Karte wird von SVGA leider nicht ausreichend unterstÅtzt.\n");
-        printf("Sie kînnen die Demo anschauen, werden aber auf erklÑrende Texte\n");
-        printf("verzichten mÅssen. Investieren Sie in Ihre Hardware. (Taste...) ");
+        printf("Your VGA card is unfortunately not sufficiently supported by SVGA.\n");
+        printf("You can watch the demo, but will have to do without explanatory texts\n");
+        printf("Invest in your hardware. (Press any key...) ");
         do
             if (getch() == 27) /* Escape */
                 quit();
@@ -207,27 +209,27 @@ void init(void)   /* initialisiert die Grafik */
 
 
 
-void intro(void) /* Programmstart: BegrÅ·ung der GÑste, Agenda, ... */
+void intro(void) /* Program start: welcoming the guests, agenda, ... */
 {
     fade(FADE_BLACKOUT, 0, 0);
     settextjustify(CENTER_TEXT, CENTER_TEXT);
     settextstyle(SANS_SERIF_FONT, HORIZ_DIR, 6);
-    ShadowText(MaxX / 2, MaxY / 4, LIGHTBLUE, LIGHTGRAY, "SVGA BGI-Treiber");
+    ShadowText(MaxX / 2, MaxY / 4, LIGHTBLUE, LIGHTGRAY, "SVGA BGI-Driver");
     settextstyle(SANS_SERIF_FONT, HORIZ_DIR, 4);
-    ShadowText(MaxX / 2, MaxY / 2, LIGHTBLUE, LIGHTGRAY, "Demoprogramm");
-    ShadowText(MaxX / 2, MaxY / 4 * 3, LIGHTBLUE, LIGHTGRAY, "Da wei· man, was man hat...");
+    ShadowText(MaxX / 2, MaxY / 2, LIGHTBLUE, LIGHTGRAY, "Demo program");
+    ShadowText(MaxX / 2, MaxY / 4 * 3, LIGHTBLUE, LIGHTGRAY, "Now you know what you've got...");
     ShadowText(MaxX / 2, MaxY / 4 * 3 + 1.2 * textheight("X"),
-        LIGHTBLUE, LIGHTGRAY, "(Bitte zurÅcklehnen)");
+        LIGHTBLUE, LIGHTGRAY, "(Please lean back)");
     fade(FADE_UP, 120, 1);
     wait(5);
     fade(FADE_DOWN, 120, 1);
 
     cleardevice();
-    ShadowText(MaxX / 2, MaxY / 4, YELLOW, LIGHTBLUE, "Die Frage ist ja eigentlich, was man");
+    ShadowText(MaxX / 2, MaxY / 4, YELLOW, LIGHTBLUE, "The real question is what to");
     ShadowText(MaxX / 2, MaxY / 4 + 1.2 * textheight("X"),
-        YELLOW, LIGHTBLUE, "mit 256 Farben blo· machen soll.");
+        YELLOW, LIGHTBLUE, "actually do with 256 colors.");
     ShadowText(MaxX / 2, MaxY / 2, YELLOW, LIGHTBLUE,
-        "Einige Anregungen finden Sie hier.");
+        "Here are some suggestions.");
     fade(FADE_UP, 120, 1);
     wait(5);
 
@@ -243,9 +245,9 @@ void balls(void)
 {
     int x,
         y,
-        size,               /* Grî·enfaktor */
-        color,              /* verwendete Farbe */
-        startcolor;         /* StartNr. der Farbskala */
+        size,               /* size factor */
+        color,              /* used color */
+        startcolor;         /* start number of the color scale */
 
     set32Hpalette();
     setlinestyle(SOLID_LINE, 0, THICK_WIDTH);
@@ -259,11 +261,11 @@ void balls(void)
         x = random(MaxX);
         y = random(MaxY);
         startcolor = random(7) * 32 + 32;
-        size = random(3) == 2 ? 2 : 1;    /* mehr kleine BÑlle */
+        size = random(3) == 2 ? 2 : 1;    /* more small balls */
 
-        if (bioskey(2) & 0x01)   /* linke Shift-Taste: andere Palette */
+        if (bioskey(2) & 0x01)   /* left shift key: other palette */
             set32palette();
-        else if (bioskey(2) & 0x02) /* rechte Shift-Taste: wieder zurÅck */
+        else if (bioskey(2) & 0x02) /* right shift key: switch back */
             set32Hpalette();
         for (color = 0; color < 32; ++color)
         {
@@ -281,30 +283,30 @@ void main(void)
     signal(SIGINT, quit);
     init();
 
-    if (MaxX > 320)  /* Schrift ist nicht lesbar bei 320 * 200 */
+    if (MaxX > 320)  /* Text is not readable at 320 * 200 */
         intro();
 
     displayColors(16, 16);
-    msg_on(" Voreingestellte Palette nach initgraph() ");
+    msg_on(" Default palette after initgraph() ");
     wait(5);
     msg_off();
     wait(5);
 
     displayColors(64, 4);
-    msg_on(" Das Gleiche, nur etwas anders dargestellt ");
+    msg_on(" The same, just displayed a bit differently ");
     wait(5);
     msg_off();
     wait(5);
 
-    show(set64palette, " 4 Skalen zu je 64 Werten, Grundfarben + Grau ");
-    show(set32palette, " Standardfarben + 7 Skalen zu je 32 Werten ");
+    show(set64palette, " 4 scales of 64 values each, primary colors + gray ");
+    show(set32palette, " Standard colors + 7 scales of 32 values each ");
 
     displayColors(16, 16);
-    show(plane, " FarbflÑchen ");
-    show(setuniformpalette, " \"Uniforme Quantisierung\" ");
+    show(plane, " Color planes ");
+    show(setuniformpalette, " \"Uniform quantization\" ");
 
     displayColors(64, 4);
-    show(setflowpalette, " Ein Beispiel mit flie·enden öbergÑngen ");
+    show(setflowpalette, " An example with smooth transitions ");
 
     cleardevice();
     set32Hpalette();
