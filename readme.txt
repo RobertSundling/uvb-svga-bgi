@@ -1,95 +1,88 @@
-
+[Translated from German to English]
 
                   SVGA.BGI (C) 1990-95 Ullrich von Bassewitz
-                           (C) 2020-23 Javier GutiÈrrez Chamorro
+                           (C) 2020-23 Javier GutiÇrrez Chamorro
 
                                   README.TXT
 
 
 
-Allgemeines
-~~~~~~~~~~~
-Die Neuerungen in Version 3.40 des Treibers betreffen vor allem S3 Karten. Als
-Folge ergaben sich jedoch auch einige allgemeine énderungen, die im hier
-aufgefÅhrt sind:
+General Information
+~~~~~~~~~~~~~~~~~~
+The changes in version 3.40 of the driver mainly concern S3 cards. As a result,
+however, there have also been some general changes, which are listed here:
 
-  * In Version 3.40 des Treibers wurde die Ansteuerung von S3 Karten komplett
-    Åberarbeitet und erweitert. Deshalb mussten die Segmentumschalt-Routinen
-    sowie die Routinen zur Verwendung mehrerer Bildschirmseiten fÅr _alle_
-    Karten geÑndert werden. Sollten bei Karten Probleme auftreten, die in alten
-    Versionen des Treibers fehlerfrei liefen, bitte ich um Meldung unter Angabe
-    von Kartenname/Chipsatz.
-  * Fast alle Modusnummern haben sich geÑndert, da ein neuer Modus "1280*1024
-    Autodetect" dazugekommen ist.
+  * In version 3.40 of the driver, the control of S3 cards was completely
+    revised and extended. Therefore, the segment switching routines as well as
+    the routines for using multiple screen pages had to be changed for _all_
+    cards. If problems occur with cards that worked flawlessly in older
+    versions of the driver, please report them, stating the card name/chipset.
+  * Almost all mode numbers have changed, as a new mode "1280*1024 Autodetect"
+    has been added.
 
 
 
-S3-Karten
-~~~~~~~~~
+S3 Cards
+~~~~~~~~
 
-  * Bei S3-Karten werden jetzt die Beschleuniger-Funktionen der Hardware
-    benutzt. Bei Problemen kann dies mit der Option "3" abgeschaltet werden
-    (siehe SVGA.DOC).
+  * For S3 cards, the accelerator functions of the hardware are now used. If
+    problems occur, this can be disabled with option "3" (see SVGA.DOC).
 
-  * Die Modus-Nummern fÅr die Umschaltung in die Grafik-Modi sind bei S3-Karten
-    unterschiedlich. Ich habe mich bei den SVGA-Modi nach meiner SPEA Mirage
-    gerichtet, die folgende Modi verwendet:
+  * The mode numbers for switching to graphics modes are different for S3
+    cards. I have based the SVGA modes on my SPEA Mirage, which uses the
+    following modes:
 
         S3 640x480x256          69h
         S3 800x600x256          6Bh
         S3 1024x768x256         6Dh
         S3 1280x1024x256        72h
 
-    Diese Modusnummern sind offensichtlich nicht fÅr alle S3-Karten gÅltig,
-    insbesondere existieren anscheinend S3 Karten mit VESA-Support bereits
-    im Video-BIOS.
-    Arbeitet die Umschaltung in den Grafikmodus nicht korrekt, dann kînnen
-    die Optionen 'V' und 'M' in Verbindung mit einem VESA-Treiber
-    verwendet werden um eine korrekte Umschaltung zu gewÑhrleisten. 'V'
-    schaltet die VESA-Erkennung ab, d.h. die Karte wird nicht als VESA-Karte
-    behandelt, 'M' erzwingt aber die Verwendung der VESA-Modus Nummern beim
-    Umschalten. Durch dieses (zugegebenermassen relativ umstÑndliche) Verfahren
-    wird der VESA-Treiber nur zur Modus-Umschaltung verwendet.
-    Falls diese Probleme mit Ihrer Karte auftreten, kînnen Sie mir gerne eine
-    Liste der von Ihrer Karte unterstÅtzten Modus-Nummern zusenden. Evtl. findet
-    sich fÅr eine spÑtere Version des Treibers ein gÅnstigerer Weg.
+    These mode numbers are obviously not valid for all S3 cards; in particular,
+    there apparently exist S3 cards with VESA support already in the video BIOS.
+    If switching to graphics mode does not work correctly, the options 'V' and
+    'M' can be used in conjunction with a VESA driver to ensure correct mode
+    switching. 'V' disables VESA detection, i.e., the card is not treated as a
+    VESA card, but 'M' forces the use of VESA mode numbers when switching.
+    Through this (admittedly somewhat cumbersome) procedure, the VESA driver is
+    used only for mode switching.
+    If these problems occur with your card, you are welcome to send me a list
+    of the mode numbers supported by your card. Perhaps a better solution can
+    be found for a later version of the driver.
 
-  * In den DOS-Boxen von OS/2 sollte die Einstellung VIDEO_8514A_XGA_IOTRAP
-    auf Off gesetzt werden. In der Standard-Einstellung (On) werden alle
-    Zugriffe auf Register der S3-Karte abgefangen und ÅberprÅft. Da die S3
-    Beschleuniger-Funktionen Åber solche Register gesteuert werden ergibt
-    sich eine z.T. erhebliche Geschwindigkeit-Einbu·e.
+  * In the DOS boxes of OS/2, the setting VIDEO_8514A_XGA_IOTRAP should be set
+    to Off. In the default setting (On), all accesses to S3 card registers are
+    intercepted and checked. Since the S3 accelerator functions are controlled
+    via such registers, this results in a sometimes considerable loss of speed.
 
 
 
 Performance
 ~~~~~~~~~~~
-Im Gegensatz zu den meisten anderen Treibern erlaubt SVGA.BGI eine sehr weite
-Anpassung des Treibers an die Umgebung (80386-Version, S3-Hardware, schnelle
-Bankswitching-Routinen fÅr VESA-Karten). Die vielfÑltigen Einstellungs-
-mîglichkeiten des Treibers haben offenbar fÅr Verwirrung gesorgt und ich wurde
-des îfteren gefragt, was denn nun die "schnellsten" bzw. "besten" Einstellungen
-seien.
+Unlike most other drivers, SVGA.BGI allows for a very wide adaptation of the
+driver to the environment (80386 version, S3 hardware, fast bankswitching
+routines for VESA cards). The many configuration options of the driver have
+apparently caused confusion, and I have often been asked what the "fastest" or
+"best" settings are.
 
-Die Antwort darauf ist (natÅrlich): "Es kommt drauf an".
+The answer to this is (of course): "It depends".
 
-Um nur zwei Beispiele zu nennen:
+To name just two examples:
 
-  * Der 80386-Treiber ist auf 16-Bit ISA-Karten nur in einer Funktion me·bar
-    schneller als die "normale" Version (PutImage wenn Mode != CopyPut).
-    Das Ñndert sich aber, wenn es sich um eine VLB- oder PCI-Karte handelt.
+  * The 80386 driver is only measurably faster than the "normal" version on
+    16-bit ISA cards in one function (PutImage when Mode != CopyPut). This
+    changes, however, if it is a VLB or PCI card.
 
-  * Der Treiber verwendet bei S3-Karten die Linienfunktion der Karte um die
-    Linien beim FÅllen von Kreisen und Polygonen zu ziehen. Diese Funktionen
-    arbeiten aber mit I/O-Befehlen, die je nach Prozessor und Modus mehr oder
-    weniger schnell sein kînnen. Zudem ist der Overhead pro Linie bei Verwendung
-    der Grafik-Hardware hîher, als beim Ziehen der Linien per Software. Was von
-    beidem schneller ist, hÑngt also nicht nur von der LÑnge der Linien ab,
-    sondern auch noch vom Modus, in dem der Prozessor lÑuft und nicht zuletzt
-    natÅrlich von der Geschwindigkeit der CPU selber.
+  * The driver uses the line function of the card for S3 cards to draw the
+    lines when filling circles and polygons. However, these functions work with
+    I/O commands, which can be more or less fast depending on the processor and
+    mode. In addition, the overhead per line is higher when using the graphics
+    hardware than when drawing the lines by software. Which is faster therefore
+    depends not only on the length of the lines, but also on the mode in which
+    the processor is running and, last but not least, of course, on the speed
+    of the CPU itself.
 
-Es lassen sich also keine allgemeinen Aussagen Åber die "beste" oder
-"schnellste" Einstellung machen. Wer tatsÑchlich auf hîchste Performance
-angewiesen ist, sollte die beste Einstellung am Zielrechner selber ausprobieren.
+So, no general statements can be made about the "best" or "fastest" setting.
+Anyone who really depends on the highest performance should try out the best
+setting on the target machine itself.
 
 
