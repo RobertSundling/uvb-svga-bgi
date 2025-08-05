@@ -1,54 +1,54 @@
+; [Comments translated from German to English]
+
 ; *****************************************************************************
 ; *                                                                           *
-; *              DPMI-Unterprogramme fÅr den SVGA.BGI Treiber                 *
+; *              DPMI subroutines for the SVGA.BGI driver                     *
 ; *                                                                           *
 ; * (C) 1990-94                                                               *
 ; * Ullrich von Bassewitz                                                     *
-; * ZwehrenbÅhlstra·e 33                                                      *
-; * D-72070 TÅbingen                                                          *
+; * ZwehrenbÔøΩhlstraÔøΩe 33                                                      *
+; * D-72070 TÔøΩbingen                                                          *
 ; *                                                                           *
 ; * E-Mail: uz@ibb.schwaben.de                                                *
 ; *                                                                           *
 ; *****************************************************************************
 
 
-; DPMI lÑuft nur ab 80286 aufwÑrts
+; DPMI runs only on 80286 and above
 P286
 
 
 
-; Holt zu einem REAL-Mode Segment einen Deskriptor. Der Deskriptor ist ein
-; Daten-Deskriptor mit der Basis-Adresse des REAL-Mode Segments und dem
-; Limit 64KB.
-; Um daraus einen Code-Deskriptor zu machen ist die Funktion DPMI_MakeCodeDesc
-; aufzurufen.
-; Das REAL-Mode Segment wird in ax erwartet, der Deskriptor wird in bx
-; zurÅckgeliefert.
-; Die Funktion ist im Real-Mode transparent, d.h. es wird einfach das Segment
-; in bx zurÅckgeliefert.
+; Gets a descriptor for a REAL-mode segment. The descriptor is a data
+; descriptor with the base address of the REAL-mode segment and a limit of
+; 64KB.
+; To turn this into a code descriptor, call the function DPMI_MakeCodeDesc.
+; The REAL-mode segment is expected in ax, the descriptor is returned in bx.
+; The function is transparent in real mode, i.e. it simply returns the segment
+; in bx.
 
 
 PROC    DPMI_SegToDesc  NEAR
 
-        cmp     [ProtMode], 0           ; Protected-Mode ?
-        jnz     @@L1                    ; Springe wenn ja
-        xchg    ax, bx                  ; Segment nach bx
-        ret                             ; Und Ende
+        cmp     [ProtMode], 0           ; Protected mode?
+        jnz     @@L1                    ; Jump if yes
+        xchg    ax, bx                  ; Segment to bx
+        ret                             ; And done
 
 ;
 
-@@L1:   push    ax                      ; Segment retten
+@@L1:   push    ax                      ; Save segment
 
-; LDT-Deskriptor belegen und nach bx
+; Allocate LDT descriptor and put in bx
 
         xor     ax, ax
         mov     cx, 1
         int     31h
         xchg    ax, bx
 
-; Basis eintragen
+; Enter base
 
-        pop     dx                      ; Segmentadresse
+        pop     dx                      ; Segment address
         rol     dx, 4
         mov     cl, dl
         and     cx, 000Fh
@@ -57,14 +57,14 @@ PROC    DPMI_SegToDesc  NEAR
         mov     ax, 7                   ; Set Segment Base Address
         int     31h
 
-; Limit auf 64KB setzen
+; Set limit to 64KB
 
         xor     cx, cx
         mov     dx, 0FFFFh
         mov     ax, 8                   ; Set Segment Limit
         int     31h
 
-; Und Ende
+; And done
 
         ret
 
@@ -73,18 +73,17 @@ ENDP    DPMI_SegToDesc
 
 
 
-; Funktion um einen Datendeskriptor in bx zu einem Codedeskriptor zu machen.
-; Der Deskriptor wird in bx erwartet und in bx zurÅckgeliefert.
-; Die Funktion ist Real-Mode transparent, d.h. im Real-Mode passiert einfach
-; nichts.
+; Function to turn a data descriptor in bx into a code descriptor.
+; The descriptor is expected in bx and returned in bx.
+; The function is transparent in real mode, i.e. nothing happens in real mode.
 
 PROC    DPMI_MakeCodeDesc       NEAR
 
-        cmp     [ProtMode], 0           ; Protected-Mode ?
-        jz      @@L9                    ; Springe wenn Nein
-        lar     cx, bx                  ; Access rights nach cx
+        cmp     [ProtMode], 0           ; Protected mode?
+        jz      @@L9                    ; Jump if no
+        lar     cx, bx                  ; Access rights to cx
         xchg    ch, cl
-        and     cx, 00F0h               ; P/DPL/S lassen
+        and     cx, 00F0h               ; Keep P/DPL/S
         or      cl, 1010b               ; Code/Non-Conform/Read
         mov     ax, 9
         int     31h
@@ -95,15 +94,14 @@ ENDP    DPMI_MakeCodeDesc
 
 
 
-; Freigabe eines LDT-Selektors. Erwartet den Selektor in bx
-; Die Funktion ist Real-Mode transparent, d.h. im Real-Mode passiert einfach
-; nichts.
+; Release an LDT selector. Expects the selector in bx.
+; The function is transparent in real mode, i.e. nothing happens in real mode.
 
 
 PROC    DPMI_FreeDesc   NEAR
 
-        cmp     [ProtMode], 0           ; Protected-Mode ?
-        jz      @@L9                    ; Springe wenn Nein
+        cmp     [ProtMode], 0           ; Protected mode?
+        jz      @@L9                    ; Jump if no
         mov     ax, 1
         int     31h
 @@L9:   ret
@@ -111,7 +109,6 @@ PROC    DPMI_FreeDesc   NEAR
 ENDP    DPMI_FreeDesc
 
 
-; TASM wieder auf die korrekte CPU rÅcksetzen
+; Reset TASM to the correct CPU
 
 RESETCPU
-
