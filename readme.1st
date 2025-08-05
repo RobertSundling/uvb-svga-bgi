@@ -1,47 +1,47 @@
+[Translated from German to English]
 
-Das Paket enthaelt die komplette Distribution meines SVGA BGI-Treibers mit
-allen Quellen.
+This package contains the complete distribution of my SVGA BGI driver with
+all sources.
 
 
 
-Bitte beachten:
+Please note:
 
-  * Fuer die Uebersetzung der Quellen wird Borland TASM in der Version
-    3.1 benoetigt, sowie das Borland Make fuer DOS.
+  * To compile the sources, Borland TASM version 3.1 is required,
+    as well as Borland Make for DOS.
 
-  * Die Adressen und Telefonnumern, die in README.TXT genannt sind, sind
-    nicht mehr gueltig.
+  * The addresses and phone numbers mentioned in README.TXT are
+    no longer valid.
 
-  * Ich will keine Anrufe, Briefe oder Mails bezueglich des Treibers
-    bekommen. Ich mache nichts mehr mit dem Treiber, und o.g. Dinge
-    stehlen mir nur meine Zeit. Eine Ausnahme mache ich nur, wenn mir
-    die anfallende Zeit bezahlt wird.
+  * I do not want to receive calls, letters, or emails regarding the driver.
+    I am no longer involved with the driver, and the above-mentioned things
+    only steal my time. I will only make an exception if I am paid for
+    the time involved.
 
-  * Fuer die Quellen gilt folgendes Copyright:
+  * The following copyright applies to the sources:
 
-Die Software (sowohl die Quellcodes, als auch die Binaries) werden
-ohne jegliche Zusagen/Garantien bezÅglich FunktionalitÑt oder
-FunktionsfÑhigkeit abgegeben. Weder die Autoren noch die Distributoren
-Åbernehmen eine Verantwortung fÅr SchÑden, die durch die Benutzung der
-Software verursacht werden.
+The software (both the source codes and the binaries) is provided
+without any assurances/warranties regarding functionality or
+operational capability. Neither the authors nor the distributors
+accept responsibility for damages caused by the use of the
+software.
 
-Die Software darf frei verwendet und weitergegeben werden, wobei
-"frei" ausdrÅcklich auch eine kommerzielle Nutzung/Weitergabe
-einschlie·t, *vorausgesetzt* die folgenden Bedingungen werden
-eingehalten:
+The software may be freely used and distributed, where
+"free" explicitly includes commercial use/distribution,
+*provided* the following conditions are met:
 
-  1. Die Herkunft der Software mu· - wenn Åberhaupt - dann korrekt
-     angegeben werden. Es ist nicht erlaubt, die Software als Werk
-     eines anderen auszugeben. Wird die Software in Teilen oder als
-     Ganzes in einem Produkt benutzt, dann wÅrde ich mich Åber einen
-     Hinweis auf die Herkunft in der Dokumentation freuen. Ein solcher
-     Hinweis ist aber nicht zwingend notwendig.
+  1. The origin of the software must?if mentioned at all?be
+     correctly stated. It is not permitted to claim the software
+     as the work of another. If the software is used in part or
+     in whole in a product, I would appreciate a note on the
+     origin in the documentation. Such a note is not strictly
+     necessary.
 
-  2. GeÑnderte Quellcodes mÅssen deutlich als solche gekennzeichnet
-     werden und dÅrfen nicht ohne einen expliziten Hinweis auf die
-     durchgefÅhrten énderungen weiterverteilt werden.
+  2. Modified source codes must be clearly marked as such and
+     may not be redistributed without an explicit note on the
+     changes made.
 
-  3. Die Bedingungen Åber die Nutzung/Weitergabe dÅrfen nicht entfernt
-     oder geÑndert werden.
+  3. The conditions regarding use/distribution may not be removed
+     or changed.
 
 
