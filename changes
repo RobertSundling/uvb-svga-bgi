@@ -1,168 +1,152 @@
-Version                 énderungen
+[Translated from German to English]
 
-2.00A   01.07.1991      Erste Version, die erweiterbar ist und mehrere Karten
-                        unterstÅtzt.
+Version                 Changes
 
-2.00B   09.07.1991      GRAPH.RES (Resourcen-Datei fÅr EditPal) enthÑlt nur
-                        noch den tatsÑchlich notwendigen Treiber.
+2.00A   01.07.1991      First version, expandable and supporting multiple cards.
 
-2.00C   10.07.1991      Vîllig neue Version von BGIBench, diesmal ohne
-                        Verwendung von MTK.
+2.00B   09.07.1991      GRAPH.RES (resource file for EditPal) now contains only
+                        the actually required driver.
 
-2.10A   12.07.1991      UnterstÅtzung des Trident-8900 Chipsatzes durch
-                        SVGA.BGI (8800 ist nicht getestet).
+2.00C   10.07.1991      Completely new version of BGIBench, this time without
+                        using MTK.
 
-2.11A   18.07.1991      Einstellung der Palette nach der Initialisierung im
-                        Treiber anders gelîst. Neues Demo-Programm PCXView.
-                        Aus der Distribution wurden zugunsten von PCXView und
-                        einiger PCX-Bilder gelîscht:
+2.10A   12.07.1991      Support for the Trident-8900 chipset by SVGA.BGI
+                        (8800 is not tested).
+
+2.11A   18.07.1991      Palette initialization after driver initialization
+                        handled differently. New demo program PCXView.
+                        The following were removed from the distribution in
+                        favor of PCXView and some PCX images:
                           - BGIDemo
-                          - Das BGI Drivers Toolkit (gibt's auf Anfrage von
-                            mir. RÅckporto nicht vergessen!).
-                          - Der Fonteditor von Borland.
+                          - The BGI Drivers Toolkit (available on request
+                            from me. Don't forget return postage!).
+                          - The Borland font editor.
 
-2.11B   20.07.1991      Kleiner Fehler aus PCXVIEW entfernt (bei InitGraph war
-                        ein Verzeichnis angegeben - tat bei mir hervoragend,
-                        aber wahrscheinlich bei sonst niemand). EDITPAL zur
-                        UnterstÅtzung aller Videomodi ausgebaut.
-                        Maus-Ansteuerung in IServer geÑndert, damit mÅ·te sich
-                        der Mauscursor eigentlich mit allen Maustreibern
-                        vertragen.
+2.11B   20.07.1991      Small bug removed from PCXVIEW (a directory was
+                        specified in InitGraph - worked great for me, but
+                        probably for no one else). EDITPAL expanded to support
+                        all video modes.
+                        Mouse control in IServer changed, so the mouse cursor
+                        should now be compatible with all mouse drivers.
 
-2.20A   22.08.1991      Schnelle Ellipsenroutinen sowie FÅll-Routinen fÅr
-                        FillEllipse eingebaut. Als Ausgleich ist die
-                        spezialisierte Kreis-Routine weggefallen, Kreise
-                        werden daher um einige Prozentpunkte langsamer
-                        gezeichnet.
-                        GeÑnderte Lîsch-Routine.
-                        Diverse Fonts aus GRAPH.RES gelîscht um Platz zu
-                        sparen.
-                        Kleine énderungen in: BGIBench, EditPal.
+2.20A   22.08.1991      Fast ellipse routines and fill routines for FillEllipse
+                        added. As compensation, the specialized circle routine
+                        was removed, so circles are now drawn a few percent
+                        slower.
+                        Changed erase routine.
+                        Various fonts removed from GRAPH.RES to save space.
+                        Small changes in: BGIBench, EditPal.
 
-2.30A   05.09.1991      UnterstÅtzung von Video7-Karten. Einige kleinere
-                        énderungen im Code zur öbersichtlichkeit und zur
-                        Optimierung vorgenommen.
-                        Hilfsprogramme zur UnterstÅtzung der neuen Modi
-                        angepasst soweit notwendig.
+2.30A   05.09.1991      Support for Video7 cards. Some minor code changes for
+                        clarity and optimization.
+                        Utility programs adapted as necessary to support new
+                        modes.
 
-2.30B   01.10.1991      EditPal neu compiliert wegen énderungen am zugrunde
-                        liegenden Multitasking-Kernel. An EditPal selber
-                        keine énderungen.
+2.30B   01.10.1991      EditPal recompiled due to changes in the underlying
+                        multitasking kernel. No changes to EditPal itself.
 
-3.00A   28.11.1991      UnterstÅtzung weiterer Karten, Autodetect-Modus.
-                        Tabellenstrukturen des Treibers komplett geÑndert.
-                        Nur noch eine PutPixel/GetPixel-Funktion.
-                        Hilfsprogramme angepasst.
+3.00A   28.11.1991      Support for more cards, autodetect mode.
+                        Driver's table structures completely changed.
+                        Only one PutPixel/GetPixel function.
+                        Utility programs adapted.
 
-3.01A   04.01.1992      Fehler in der GetPixByte-Funktion des Treibers behoben.
-                        FÅhrte dazu da· GetImageSize einen um den Faktor 4 zu
-                        gro·en Wert zurÅcklieferte, was (bei Verwendung von
-                        GetImageSize) die Grî·e der Bildausschnitte auf 16 KB
-                        Bilddaten beschrÑnkte. Es sind jetzt volle 64 KB
-                        mîglich. Sonst keine énderungen.
+3.01A   04.01.1992      Fixed bug in the driver's GetPixByte function.
+                        Caused GetImageSize to return a value four times too
+                        large, which (when using GetImageSize) limited the
+                        size of image sections to 16 KB of image data. Now
+                        full 64 KB are possible. No other changes.
 
-3.01B   10.03.1992      Diverse énderungen an den Textfiles; EditPal vorlÑufig
-                        gestrichen; neues Modul PixFont.
+3.01B   10.03.1992      Various changes to text files; EditPal temporarily
+                        removed; new module PixFont.
 
-3.10A   23.07.1992      Kleinere énderungen. UnterstÅtzng von VESA-Karten.
-                        UnterstÅtzung der Oak-Karte. 286 und 386 Version.
-                        Neues Programm FontDemo, verbesserte Version von
-                        PixFont, mehr Pixelfonts. Keine ausfÅhrlichen Namen
-                        mehr. FillPoly in Assembler. Vektorfonts aus der
-                        Distribution genommen.
+3.10A   23.07.1992      Minor changes. Support for VESA cards.
+                        Support for Oak card. 286 and 386 version.
+                        New program FontDemo, improved version of PixFont,
+                        more pixel fonts. No more verbose names.
+                        FillPoly in assembler. Vector fonts removed from
+                        distribution.
 
-3.10B   07.09.1992      Neues Programm SVGADEMO. Neue Version von PList.
-                        Kleinere énderungen am README.TXT.
+3.10B   07.09.1992      New program SVGADEMO. New version of PList.
+                        Minor changes to README.TXT.
 
-3.10C   26.10.1992      Neue Beispielprogramme fÅr Resourcedatei. énderungen
-                        an den Textdateien.
+3.10C   26.10.1992      New example programs for resource file. Changes to
+                        text files.
 
-3.11A   30.11.1992      Nachdem die Version 3.20 doch noch etwas auf sich
-                        warten lÑ·t, Freigabe von V 3.11 als Bugfix-Version.
-                        - Bei Clip-Fenstern von exakt der Hîhe oder Breite
-                          eines Zeichens wurde bei OutText kein Text
-                          ausgegeben.
-                        - Fehler in der Erkennung der Oak-Karte.
-                        - Einen Fehler in der 286-Version behoben.
-                        - Vor dem Autodetect wird zuerst Modus 3 (Text 80x25)
-                          eingeschaltet um die Karte korrekt zu initialisieren.
-                          (Erkennung von PVGA-Chips).
-                        - Bei PatBar wurde bei FÅllmuster = SolidFill,
-                          Breite = 1 und ungerader X-Koordinate nur das oberste
-                          Pixel gezeichnet.
+3.11A   30.11.1992      Since version 3.20 is still delayed, release of V 3.11
+                        as a bugfix version.
+                        - For clip windows exactly the height or width of a
+                          character, OutText did not output any text.
+                        - Bug in Oak card detection.
+                        - Fixed a bug in the 286 version.
+                        - Before autodetect, mode 3 (text 80x25) is first
+                          enabled to correctly initialize the card (detection
+                          of PVGA chips).
+                        - For PatBar, with fill pattern = SolidFill, width = 1,
+                          and odd X coordinate, only the top pixel was drawn.
 
-3.20A   09.02.1993      FloodFill implementiert. Seitenumschaltung dokumentiert
-                        und erweitert.
+3.20A   09.02.1993      FloodFill implemented. Page switching documented and
+                        extended.
 
-3.21A   16.05.1993      FillPoly "repariert". Die Version 7.0 von TP bringt im
-                        hîchsten Bit des ZÑhlers noch ein Flag unter, das vor
-                        Verwendung des ZÑhlers gelîscht werden mu·. Leider ist
-                        die Schnittstelle zu FillPoly in den Unterlagen vîllig
-                        falsch dokumentiert, so da· ich hier immer auf eigene
-                        Ermittlungen angewiesen bin.
-                        PutImage besitzt einen neuen Modus TransPut (Idee ist
-                        nicht von mir!), bei dem alle Pixel mit Farbe 0 nicht
-                        gezeichnet werden.
-                        Versionsabfrage in der Quelle von PCXView rausge-
-                        schmissen.
-                        Version von PixFont fÅr C beigefÅgt.
+3.21A   16.05.1993      FillPoly "repaired". Version 7.0 of TP puts a flag in
+                        the highest bit of the counter, which must be cleared
+                        before using the counter. Unfortunately, the interface
+                        to FillPoly is completely incorrectly documented, so I
+                        always have to rely on my own investigations here.
+                        PutImage now has a new mode TransPut (not my idea!),
+                        where all pixels with color 0 are not drawn.
+                        Version query removed from the source of PCXView.
+                        Version of PixFont for C included.
 
-3.21B   23.05.1993      énderung am README. Beta-Version des Treibers fÅr als
-                        BP7 (DPMI) beigelegt. Neue Datei README.BP7
+3.21B   23.05.1993      Change to README. Beta version of the driver for BP7
+                        (DPMI) included. New file README.BP7
 
-3.21C   27.10.1993      DPMI-Treiber als NON-Beta deklariert, Freigabe der
-                        freien Version.
+3.21C   27.10.1993      DPMI driver declared as NON-Beta, release of the free
+                        version.
 
-3.21D   29.10.1993      Diverse Relikte aus der kommerziellen Version aus
-                        SVGA.TEX gelîscht.
+3.21D   29.10.1993      Various remnants from the commercial version removed
+                        from SVGA.TEX.
 
-3.33A   30.11.1993      Neue Version des DPMI-Treibers. Nochmals die Texte
-                        Åberarbeitet.
+3.33A   30.11.1993      New version of the DPMI driver. Texts revised again.
 
-3.33B   14.01.1994      SVGA.TEX nach ASCII Åbersetzt und etwas erweitert.
-                        README.TXT angepasst. Einen Gro·teil der PCX Bilder
-                        rausgeschmissen, da der Treiber inzwischen fast nur
-                        noch per Telefon (nicht mehr per Diskette) uebertragen
-                        wird, und dabei (leider) jedes KB zÑhlt...
+3.33B   14.01.1994      SVGA.TEX translated to ASCII and slightly expanded.
+                        README.TXT adapted. Most of the PCX images removed,
+                        since the driver is now almost exclusively distributed
+                        by phone (no longer by disk), and (unfortunately)
+                        every KB counts...
 
-3.40A   21.08.1994      "S3-Release" :-) S3 Erkennung sowie Modus Umschaltung
-                        verbessert. Neuer Modus 1280*1024 bei S3 Karten.
-                        Verwendung der S3 Graphics Engine fÅr diverse
-                        Funktionen. Seitenumschaltung musste deshalb komplett
-                        umgeschrieben. werden. Kleinere 486-Optimierungen in
-                        der 386-Version. Textfiles erweitert und angepasst.
-                        ACHTUNG: Modusnummern haben sich geÑndert.
-                        Alle PCX-Bilder gelîscht.
+3.40A   21.08.1994      "S3-Release" :-) S3 detection and mode switching
+                        improved. New mode 1280*1024 for S3 cards.
+                        Use of the S3 Graphics Engine for various functions.
+                        Page switching had to be completely rewritten.
+                        Minor 486 optimizations in the 386 version.
+                        Text files expanded and adapted.
+                        NOTE: Mode numbers have changed.
+                        All PCX images deleted.
 
-3.50A   09.01.1995      énderung bei FillPoly: Das Grafik-Kernel Ñndert den
-                        Algorithmus fÅr gefÅllte Kreise, wenn es erkennt, das
-                        der geladene Treiber FillPoly direkt unterstÅtzt, mit
-                        dem Effekt, da· kleine Kreise nicht mehr rund sind.
-                        Der Treiber wurde so angepasst, da· er dieses Verhalten
-                        des Grafik-Kernels umgeht.
-                        Treiber an Version 1.2 des VESA-Standards angepasst,
-                        mit neueren VESA-Treibern sind mehrere Bilschirmseiten
-                        mîglich.
-                        Neuer Modus 1024*768 ATI Wonder (Dank an Thomas Seidel,
-                        seidel@ipe.et.uni-magdeburg.de), dadurch haben sich
-                        leider z.T. die Nummern der kartenspezifischen Modi
-                        geÑndert.
+3.50A   09.01.1995      Change to FillPoly: The graphics kernel changes the
+                        algorithm for filled circles when it detects that the
+                        loaded driver directly supports FillPoly, with the
+                        effect that small circles are no longer round.
+                        The driver was adapted to circumvent this behavior of
+                        the graphics kernel.
+                        Driver adapted to version 1.2 of the VESA standard,
+                        with newer VESA drivers multiple screen pages are
+                        possible.
+                        New mode 1024*768 ATI Wonder (thanks to Thomas Seidel,
+                        seidel@ipe.et.uni-magdeburg.de), which unfortunately
+                        changed some of the card-specific mode numbers.
 
-3.51A   03.05.1995      Fehler aus PCXView entfernt (HRes und VRes wurden
-                        falsch interpretiert). énderungen an SVGA.DOC,
-                        PIXFONT.DOC und CHANGES.
-                        énderung an SVGA.BGI: Der Treiber setzt nicht mehr
-                        voraus, da· logische und echte ZeilenlÑnge identisch
-                        sind (das ist bei der Ansteuerung Åber VESA-Treiber
-                        z.T. der Fall).
+3.51A   03.05.1995      Bug removed from PCXView (HRes and VRes were
+                        misinterpreted). Changes to SVGA.DOC, PIXFONT.DOC and
+                        CHANGES.
+                        Change to SVGA.BGI: The driver no longer assumes that
+                        logical and actual line length are identical (which is
+                        sometimes the case when using VESA drivers).
 
-4.00	15.04.2021	- Made it possible to assembly with TASM 5.
-			- Included neccessary Borland tools.
+4.00	15.04.2021	- Made it possible to assemble with TASM 5.
+			- Included necessary Borland tools.
 			- Added 286 optimized BGI/BP7 drivers.
 			-  Applied some speed and size optimizations:
 			   BGIBENCH SVGA 5
 			   SVGA 3.51A:   196.25     n/a  188.55
 			   SVGA 4.00:    194.55  193.40  180.80
-
-
-
