@@ -1,11 +1,13 @@
+; [Comments translated from German to English]
+
 ; *****************************************************************************
 ; *                                                                           *
-; *                     Macros fÅr den SVGA.BGI Treiber                       *
+; *                     Macros for the SVGA.BGI driver                        *
 ; *                                                                           *
 ; * (C) 1990-94 by                                                            *
 ; * Ullrich von Bassewitz                                                     *
-; * ZwehrenbÅhlstra·e 33                                                      *
-; * D-72070 TÅbingen                                                          *
+; * Zwehrenbuehlstrasse 33                                                    *
+; * D-72070 Tuebingen                                                         *
 ; *                                                                           *
 ; * E-Mail: uz@ibb.schwaben.de                                                *
 ; *                                                                           *
@@ -81,10 +83,10 @@ IF P80386
 	and     cx, 3
 	rep	movsb
 ELSE
-        shr     cx, 1                   ; / 2 fÅr Worte
-        rep     movsw                   ; Worte kopieren
-        adc     cx, cx                  ; Noch ein Carry Åbrig ?
-        rep     movsb                   ; Byte kopieren falls Carry
+        shr     cx, 1                   ; / 2 for words
+        rep     movsw                   ; Copy words
+        adc     cx, cx                  ; Still a carry left?
+        rep     movsb                   ; Copy byte if carry
 ENDIF
 ENDM
 
@@ -101,33 +103,32 @@ IF P80386
 	and     cx, 3
 	rep	stosb
 ELSE
-        shr     cx, 1                   ; / 2 fÅr Worte
-        rep     stosw                   ; Worte kopieren
-        adc     cx, cx                  ; Noch ein Carry Åbrig ?
-        rep     stosb                   ; Byte kopieren falls Carry
+        shr     cx, 1                   ; / 2 for words
+        rep     stosw                   ; Copy words
+        adc     cx, cx                  ; Still a carry left?
+        rep     stosb                   ; Copy byte if carry
 ENDIF
 ENDM
 
 
 
-; Der folgende Macro berechnet die Adresse zu einer Position in X/Y und
-; setzt das Segment passend. Seg64 mu· ein aktives Segment enthalten,
-; ax enthÑlt den Y und bx den X-Wert. Das Macro zerstîrt ax und dx und
-; liefert in ax den Offset.
-; ds mu· auf das Codesegment zeigen (d.h. die Variable mÅssen verfÅgbar
-; sein).
+; The following macro calculates the address for a position in X/Y and
+; sets the segment accordingly. Seg64 must contain an active segment,
+; ax contains the Y and bx the X value. The macro destroys ax and dx and
+; returns the offset in ax.
+; ds must point to the code segment (i.e. the variables must be available)
 
 
 MACRO   CalcAdr
 LOCAL   @@L1
-        add     ax, [PageOfs]           ;; Korrektur fÅr Bildschirmseite
+        add     ax, [PageOfs]           ;; Correction for screen page
         mul     [BytesPerLine]
-        add     ax, bx                  ;; Offset aufaddieren
-        adc     dl, 0                   ;; öberlauf
-        cmp     dl, [Seg64]             ;; Segment schon ok ?
-        je      @@L1                    ;; Stimmt schon
-        mov     [Seg64], dl             ;; Segment setzen
-        call    [SegSelect]             ;; und einstellen
+        add     ax, bx                  ;; Add offset
+        adc     dl, 0                   ;; Overflow
+        cmp     dl, [Seg64]             ;; Segment already ok?
+        je      @@L1                    ;; Already correct
+        mov     [Seg64], dl             ;; Set segment
+        call    [SegSelect]             ;; and set
 @@L1:
 
 ENDM
@@ -156,5 +157,3 @@ ELSE
 ENDIF
 
 ENDM
-
-
