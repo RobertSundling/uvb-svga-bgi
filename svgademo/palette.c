@@ -1,22 +1,24 @@
+/* [Comments translated from German to English] */
+
 /***********************************************************************
 
-palette.c - stellt einige Funktionen zur Manipulation der Farbpalette
-            von VGA-Karten zur VerfÅgung.
-            Entwickelt fÅr den SVGA-Treiber von Ullrich von Bassewitz,
-            sollte aber auch auf jeder IBM 8514-Karte in Verbindung mit
-            dem entsprechenden BGI-Treiber laufen.
+palette.c - provides some functions for manipulating the color palette
+            of VGA cards.
+            Developed for the SVGA driver by Ullrich von Bassewitz,
+            but should also work on any IBM 8514 card in conjunction
+            with the corresponding BGI driver.
 
             Friedlieb Jung-Merkelbach
-            Burbachstra·e 41
+            Burbachstra√üe 41
             W-5270 Gummersbach 31
 
-            Der Code hat mich zwar einige Arbeit gekostet, ist aber
-            andererseits sicher nicht geeignet, die Welt zu retten.
-            Daher habe ich nichts gegen eine Nutzung, auch innerhalb
-            kommerzieller Programme.
-            Nett wÑre aber bei Verbesserungen/Korrekturen oder interessanten
-            neuen Paletten mitsamt Anwendungsbeispiel die öbersendung einer
-            entsprechenden Diskette an meine obenstehende Adresse.  :-)
+            The code did cost me some work, but on the other hand,
+            it certainly isn't going to save the world.
+            Therefore, I have no objection to its use, even within
+            commercial programs.
+            It would be nice, however, if improvements/corrections or
+            interesting new palettes with application examples were sent
+            to my address above on a diskette.  :-)
 
 ***********************************************************************/
 
@@ -27,7 +29,7 @@ palette.c - stellt einige Funktionen zur Manipulation der Farbpalette
 
 typedef unsigned char Byte;
 
-typedef struct   /* 1 Eintrag in der VGA-Palette */
+typedef struct   /* 1 entry in the VGA palette */
 {
     Byte red;
     Byte green;
@@ -36,52 +38,50 @@ typedef struct   /* 1 Eintrag in der VGA-Palette */
 
 
 /*
- *  Die folgende Tabelle sollte fÅr jede VGA-Karte brauchbare Ergebnisse
- *  bringen. Eventuell werden aber auch Korrekturen erforderlich; die
- *  entsprechenden Werte mÅ·ten ausprobiert oder (wem das lieber ist)
- *  "empirisch ermittelt" werden.
+ *  The following table should give usable results for any VGA card.
+ *  Corrections may be necessary, however; the corresponding values
+ *  would have to be tried out or (for those who prefer) "empirically
+ *  determined".
  */
 static RGB_Entry EGAPalette[16] =
-{  /*  Rot  GrÅn  Blau */
-    { 0x00, 0x00, 0x00 } ,     /*  0  Schwarz     */
-    { 0x00, 0x00, 0xAA } ,     /*  1  Blau        */
-    { 0x00, 0xAA, 0x00 } ,     /*  2  GrÅn        */
-    { 0x00, 0xAA, 0xAA } ,     /*  3  Zyan        */
-    { 0xAA, 0x00, 0x00 } ,     /*  4  Rot         */
+{  /*  Red  Green  Blue */
+    { 0x00, 0x00, 0x00 } ,     /*  0  Black       */
+    { 0x00, 0x00, 0xAA } ,     /*  1  Blue        */
+    { 0x00, 0xAA, 0x00 } ,     /*  2  Green       */
+    { 0x00, 0xAA, 0xAA } ,     /*  3  Cyan        */
+    { 0xAA, 0x00, 0x00 } ,     /*  4  Red         */
     { 0xAA, 0x00, 0xAA } ,     /*  5  Magenta     */
-    { 0xAA, 0x55, 0x00 } ,     /*  6  Braun       */
-    { 0xAA, 0xAA, 0xAA } ,     /*  7  Hellgrau    */
-    { 0x57, 0x57, 0x57 } ,     /*  8  Dunkelgrau  */
-    { 0x55, 0x55, 0xFF } ,     /*  9  Hellblau    */
-    { 0x00, 0xFF, 0x00 } ,     /* 10  HellgrÅn    */
-    { 0x00, 0xFF, 0xFF } ,     /* 11  Hellzyan    */
-    { 0xFF, 0x55, 0x55 } ,     /* 12  Hellrot     */
-    { 0xFF, 0x55, 0xFF } ,     /* 13  Hellmagenta */
-    { 0xFF, 0xFF, 0x00 } ,     /* 14  Gelb        */
-    { 0xFF, 0xFF, 0xFF }       /* 15  Wei·        */
+    { 0xAA, 0x55, 0x00 } ,     /*  6  Brown       */
+    { 0xAA, 0xAA, 0xAA } ,     /*  7  Light gray  */
+    { 0x57, 0x57, 0x57 } ,     /*  8  Dark gray   */
+    { 0x55, 0x55, 0xFF } ,     /*  9  Light blue  */
+    { 0x00, 0xFF, 0x00 } ,     /* 10  Light green */
+    { 0x00, 0xFF, 0xFF } ,     /* 11  Light cyan  */
+    { 0xFF, 0x55, 0x55 } ,     /* 12  Light red   */
+    { 0xFF, 0x55, 0xFF } ,     /* 13  Light magenta */
+    { 0xFF, 0xFF, 0x00 } ,     /* 14  Yellow      */
+    { 0xFF, 0xFF, 0xFF }       /* 15  White       */
 } ;
 
 /************************************************************************
 
          int fade(enum fade_mode modus, int steps, int milli)
 
-blendet die 16 ersten Farben auf oder ab. Eine Erweiterung auf mehr
-Farben ist in der derzeitigen Form nicht sinnvoll, da nur die ersten
-16 Farben (nÑmlich Åber die obige Tabelle) bekannt sind.
+Fades the first 16 colors in or out. An extension to more colors is not
+meaningful in the current form, since only the first 16 colors (namely
+via the table above) are known.
 
-return 0 bei Erfolg, -1 bei ungÅltigem Modus
-GÅltige Modi (siehe palette.h):
-    FADE_UP         blendet auf: von Schwarz zur vollen Helligkeit
-    FADE_DOWN       blendet ab: von 'Total Normal' bis 'Stockdunkel'
-    FADE_BLACKOUT   schaltet mit einem Schlag alle Lichter aus
-    FADE_RESTORE    wieder an: Herstellung der Original-Farben
+return 0 on success, -1 on invalid mode
+Valid modes (see palette.h):
+    FADE_UP         fades in: from black to full brightness
+    FADE_DOWN       fades out: from 'totally normal' to 'pitch dark'
+    FADE_BLACKOUT   switches off all lights at once
+    FADE_RESTORE    switches on again: restores the original colors
 
-steps gibt die Anzahl der Schritte an, die fÅr das 'faden' verwendet
-      werden.
-millt gibt eine Zeit in Millisekunden an, die nach jedem Step
-      gewartet wird.
+steps specifies the number of steps to use for fading.
+milli specifies a time in milliseconds to wait after each step.
 
-Diese beiden Parameter werden nur bei FADE_UP und FADE_DOWN ausgewertet.
+These two parameters are only evaluated for FADE_UP and FADE_DOWN.
 
 ************************************************************************/
 
@@ -120,12 +120,12 @@ int fade(enum fade_mode modus, int steps, int milli)
 
         case FADE_BLACKOUT:
             for (i = 0; i < 16; i++)
-               setrgbpalette(i, 0, 0, 0);     /* Alles Schwarz */
+               setrgbpalette(i, 0, 0, 0);     /* All black */
             break;
 
         case FADE_RESTORE:
             for (i = 0; i < 16; i++)
-                setrgbpalette(i,      /* Original EGA-Farben restaurieren */
+                setrgbpalette(i,      /* Restore original EGA colors */
                     EGAPalette[i].red,
                     EGAPalette[i].green,
                     EGAPalette[i].blue);
@@ -139,7 +139,7 @@ int fade(enum fade_mode modus, int steps, int milli)
 }
 
 
-void plane(void)  /* Anregung aus c't 12/89, S. 168 */
+void plane(void)  /* Inspired by c't 12/89, p. 168 */
 {
     int r,
         g,
@@ -166,7 +166,7 @@ void plane(void)  /* Anregung aus c't 12/89, S. 168 */
 }
 
 
-void setuniformpalette(void)  /* siehe c't 12/89, S. 168 */
+void setuniformpalette(void)  /* see c't 12/89, p. 168 */
 {
     int r,
         g,
@@ -185,11 +185,11 @@ void setuniformpalette(void)  /* siehe c't 12/89, S. 168 */
 
                    void set32palette(void)
 
-setzt eine Palette aus folgenden Komponenten:
-  16 Standardfarben
-  16 dazu komplementÑre Farben
-   7 Helligkeitsskalen zu je 32 Abstufungen mit den Farben
-     Rot, GrÅn, Blau, Gelb, Cyan, Magenta und Grau
+Sets a palette with the following components:
+  16 standard colors
+  16 complementary colors
+   7 brightness scales with 32 levels each for the colors
+     red, green, blue, yellow, cyan, magenta, and gray
 
 ************************************************************************/
 
@@ -199,24 +199,24 @@ void set32palette(void)
 
     for (i = 0; i < 16; i++)
     {
-       setrgbpalette(i,                 /* Original EGA Farben */
+       setrgbpalette(i,                 /* Original EGA colors */
            EGAPalette[i].red,
            EGAPalette[i].green,
            EGAPalette[i].blue);
-       setrgbpalette(i + 16,            /* KomplementÑrfarben */
+       setrgbpalette(i + 16,            /* Complementary colors */
            0xFF - EGAPalette[i].red,
            0xFF - EGAPalette[i].green,
            0xFF - EGAPalette[i].blue);
     }
     for (i = 0; i < 32; i++)
-    {                     /*     Rot    GrÅn    Blau  */
-       setrgbpalette(i +  32, i << 3,      0,      0);    /* Rot     */
-       setrgbpalette(i +  64,      0, i << 3,      0);    /* GrÅn    */
-       setrgbpalette(i +  96,      0,      0, i << 3);    /* Blau    */
-       setrgbpalette(i + 128, i << 3, i << 3,      0);    /* Gelb    */
+    {                     /*     Red    Green   Blue  */
+       setrgbpalette(i +  32, i << 3,      0,      0);    /* Red     */
+       setrgbpalette(i +  64,      0, i << 3,      0);    /* Green   */
+       setrgbpalette(i +  96,      0,      0, i << 3);    /* Blue    */
+       setrgbpalette(i + 128, i << 3, i << 3,      0);    /* Yellow  */
        setrgbpalette(i + 160,      0, i << 3, i << 3);    /* Cyan    */
        setrgbpalette(i + 192, i << 3,      0, i << 3);    /* Magenta */
-       setrgbpalette(i + 224, i << 3, i << 3, i << 3);    /* Grau    */
+       setrgbpalette(i + 224, i << 3, i << 3, i << 3);    /* Gray    */
     }
     return;
 }
@@ -226,13 +226,13 @@ void set32palette(void)
 
                    void set32Hpalette(void)
 
-setzt eine Palette aus folgenden Komponenten:
-  16 Standardfarben
-  16 dazu komplementÑre Farben
-   7 Helligkeitsskalen zu je 32 Abstufungen mit den Farben
-     Rot, GrÅn, Blau, Gelb, Cyan, Magenta und Grau
-     genau wie set32palette(), jedoch beginnend in der zweiten
-     HÑlfte der mîglichen Werte
+Sets a palette with the following components:
+  16 standard colors
+  16 complementary colors
+   7 brightness scales with 32 levels each for the colors
+     red, green, blue, yellow, cyan, magenta, and gray
+     just like set32palette(), but starting in the second
+     half of the possible values
 
 ************************************************************************/
 
@@ -242,24 +242,24 @@ void set32Hpalette(void)
 
     for (i = 0; i < 16; i++)
     {
-       setrgbpalette(i,                 /* Original EGA Farben */
+       setrgbpalette(i,                 /* Original EGA colors */
            EGAPalette[i].red,
            EGAPalette[i].green,
            EGAPalette[i].blue);
-       setrgbpalette(i + 16,            /* KomplementÑrfarben */
+       setrgbpalette(i + 16,            /* Complementary colors */
            0xFF - EGAPalette[i].red,
            0xFF - EGAPalette[i].green,
            0xFF - EGAPalette[i].blue);
     }
     for (i = 32; i < 64; i++)
-    {                     /*     Rot    GrÅn    Blau  */
-       setrgbpalette(i,       i << 2,      0,      0);    /* Rot     */
-       setrgbpalette(i +  32,      0, i << 2,      0);    /* GrÅn    */
-       setrgbpalette(i +  64,      0,      0, i << 2);    /* Blau    */
-       setrgbpalette(i +  96, i << 2, i << 2,      0);    /* Gelb    */
+    {                     /*     Red    Green   Blue  */
+       setrgbpalette(i,       i << 2,      0,      0);    /* Red     */
+       setrgbpalette(i +  32,      0, i << 2,      0);    /* Green   */
+       setrgbpalette(i +  64,      0,      0, i << 2);    /* Blue    */
+       setrgbpalette(i +  96, i << 2, i << 2,      0);    /* Yellow  */
        setrgbpalette(i + 128,      0, i << 2, i << 2);    /* Cyan    */
        setrgbpalette(i + 160, i << 2,      0, i << 2);    /* Magenta */
-       setrgbpalette(i + 192, i << 2, i << 2, i << 2);    /* Grau    */
+       setrgbpalette(i + 192, i << 2, i << 2, i << 2);    /* Gray    */
     }
     return;
 }
@@ -269,8 +269,9 @@ void set32Hpalette(void)
 
                    void set64palette(void)
 
-setzt eine Palette mit 4 Helligkeitsskalen zu je 64 Werten, mit den drei
-Grundfarben Rot, GrÅn und Blau sowie Grau als "reine Mischfarbe"
+Sets a palette with 4 brightness scales with 64 values each, with the
+three primary colors red, green, and blue as well as gray as a "pure
+mixed color"
 
 ************************************************************************/
 
@@ -279,22 +280,22 @@ void set64palette(void)
     int i;
 
     for (i = 0; i < 64; i++)
-    {                   /*       Rot    GrÅn    Blau  */
-       setrgbpalette(      i, i << 2,      0,      0);    /* Rotskala  */
-       setrgbpalette(i +  64,      0, i << 2,      0);    /* GrÅnskala */
-       setrgbpalette(i + 128,      0,      0, i << 2);    /* Blauskala */
-       setrgbpalette(i + 192, i << 2, i << 2, i << 2);    /* Grauskala */
+    {                   /*       Red    Green   Blue  */
+       setrgbpalette(      i, i << 2,      0,      0);    /* Red scale   */
+       setrgbpalette(i +  64,      0, i << 2,      0);    /* Green scale */
+       setrgbpalette(i + 128,      0,      0, i << 2);    /* Blue scale  */
+       setrgbpalette(i + 192, i << 2, i << 2, i << 2);    /* Gray scale  */
     }
     return;
 }
 
 
-void setflowpalette(void) /* ein Beispiel fÅr flie·ende FarbÅbergÑnge */
+void setflowpalette(void) /* an example for smooth color transitions */
 {
     int i;
 
     for (i = 0; i < 64; i++)
-    {                        /*         Rot           GrÅn           Blau  */
+    {                        /*         Red           Green          Blue  */
        setrgbpalette(      i,        i << 2, (63 - i) << 2,             0);
        setrgbpalette( i + 64, (63 - i) << 2,             0,        i << 2);
        setrgbpalette(i + 128,             0,        i << 2, (63 - i) << 2);
