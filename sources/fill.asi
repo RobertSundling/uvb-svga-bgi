@@ -1,11 +1,13 @@
+; [Comments translated from German to English]
+
 ; *****************************************************************************
 ; *                                                                           *
-; *                   FloodFill fÅr den SVGA.BGI Treiber                      *
+; *                   FloodFill for the SVGA.BGI driver                       *
 ; *                                                                           *
 ; * (C) 1990-94                                                               *
 ; * Ullrich von Bassewitz                                                     *
-; * ZwehrenbÅhlstra·e 33                                                      *
-; * D-72070 TÅbingen                                                          *
+; * ZwehrenbÔøΩhlstraÔøΩe 33                                                      *
+; * D-72070 TÔøΩbingen                                                          *
 ; *                                                                           *
 ; * E-Mail: uz@ibb.schwaben.de                                                *
 ; *                                                                           *
@@ -33,45 +35,45 @@
 
 
 ;---------------------------------------------------------------------
-; ScanLeft: Sucht nach links, bis entweder ein Pixel in Randfarbe oder
-; die Grenze des Clip-Fensters erreicht ist.
+; ScanLeft: Searches to the left until either a pixel in the border color
+; or the edge of the clip window is reached.
 ;
-; Erwartet:     AX = Y
+; Expects:      AX = Y
 ;               BX = X
-;               ES = Video-Segment
+;               ES = Video segment
 ;
-; Ergebnis:     Letztes Pixel vor Randfarbe oder Grenze in bx (= X)
+; Result:       Last pixel before border color or edge in bx (= X)
 
 
 PROC    ScanLeft
 
         push    di
-        CalcAdr                         ; Adresse berechnen
-        xchg    di, ax                  ; Offset nach di
+        CalcAdr                         ; Calculate address
+        xchg    di, ax                  ; Offset to di
 
-; Suchschleife, X = bx
+; Search loop, X = bx
 
         mov     al, [BorderColor]
-        mov     cx, [Clip_X1]           ; Ins Register fÅr Speed
+        mov     cx, [Clip_X1]           ; Into register for speed
 
-@@L2:   cmp     bx, cx                  ; Rand des Clipfensters ?
-        jl      @@L3                    ; Ja: Ende
-        cmp     al, [es:di]             ; Randfarbe ?
-        je      @@L3                    ; Ja: Ende
+@@L2:   cmp     bx, cx                  ; Edge of clip window?
+        jl      @@L3                    ; Yes: end
+        cmp     al, [es:di]             ; Border color?
+        je      @@L3                    ; Yes: end
 
         dec     bx                      ; X := X - 1;
-        sub     di, 1                   ; dec setzt nicht alle Flags
-        jnc     @@L2                    ; NÑchstes
+        sub     di, 1                   ; dec does not set all flags
+        jnc     @@L2                    ; Next
 
-; SegmentÅberlauf behandeln
+; Handle segment overflow
 
-        dec     [Seg64]                 ; ein Segment tiefer
-        call    [SegSelect]             ; einstellen
-        jmp     @@L2                    ; Und nÑchstes Pixel
+        dec     [Seg64]                 ; one segment lower
+        call    [SegSelect]             ; set
+        jmp     @@L2                    ; And next pixel
 
-; Fertig, Grenze gefunden
+; Done, edge found
 
-@@L3:   inc     bx                      ; Auf letztes Pixel davor
+@@L3:   inc     bx                      ; To last pixel before
         pop     di
         ret
 
@@ -79,65 +81,65 @@ ENDP    ScanLeft
 
 
 ;---------------------------------------------------------------------
-; ScanRight: Sucht nach rechts, bis entweder ein Pixel in Randfarbe oder
-; die Grenze des Clip-Fensters erreicht ist
+; ScanRight: Searches to the right until either a pixel in the border color
+; or the edge of the clip window is reached
 ;
-; Erwartet:     AX = Y
+; Expects:      AX = Y
 ;               BX = X
-;               ES = Video-Segment
+;               ES = Video segment
 ;
-; Ergebnis:     Letztes Pixel vor Randfarbe oder Grenze in bx (= X)
+; Result:       Last pixel before border color or edge in bx (= X)
 
 
 PROC    ScanRight
 
         push    di
-        CalcAdr                         ; Adresse berechnen
-        xchg    di, ax                  ; Offset nach di
+        CalcAdr                         ; Calculate address
+        xchg    di, ax                  ; Offset to di
 
-; Maximale Anzahl zu durchsuchender Bytes berechnen
+; Calculate maximum number of bytes to search
 
         mov     cx, [Clip_X2]
         sub     cx, bx
         inc     cx
 
-; Den jetzigen Offset vom X-Wert subtrahieren
+; Subtract current offset from X value
 
         sub     bx, di
 
-; Randfarbe nach al
+; Border color into al
 
         mov     al, [BorderColor]
         cld
 
-; PrÅfen ob zwischendrin ein öberlauf auftreten kann
+; Check if an overflow can occur in between
 
         mov     dx, di
         add     dx, cx
         jnc     @@L1
         mov     cx, di
         neg     cx
-        push    dx                      ; Restzahl auf Stack
+        push    dx                      ; Remaining count on stack
 
-; Mit REP SCASB scannen
+; Scan with REP SCASB
 
         repne   scasb
-        pop     cx                      ; Neuer ZÑhler
-        je      @@L2                    ; Springe wenn gefunden
+        pop     cx                      ; New counter
+        je      @@L2                    ; Jump if found
 
-; NÑchstes Segment setzen
+; Set next segment
 
-        inc     [Seg64]                 ; öberlauf...
+        inc     [Seg64]                 ; overflow...
         call    [SegSelect]
 
-; Zweite (bzw. einzige) HÑlfte scannen
+; Scan second (or only) half
 
 @@L1:   repne   scasb
 @@L2:
-	Sub2	di			;Auf das gefundene Byte stellen bzw. davor
-        add     bx, di                  ; Und passenden X-Wert rechnen
+	Sub2	di			;Set to found byte or before
+        add     bx, di                  ; And calculate matching X value
 
-; Ende
+; End
 
         pop     di
         ret
@@ -146,66 +148,66 @@ ENDP    ScanRight
 
 ;---------------------------------------------------------------------------
 ;
-; ScanDist: Sucht eine Linie zwischen zwei X-Werten ab, bis ein Punkt
-; erreicht ist, der nicht der Randfarbe entspricht. Wird ein solcher
-; Punkt gefunden, so kommt ein gelîschtes Carry und der entsprechende
-; X-Wert in bx zurÅck, ansonsten ein gesetztes Carry.
+; ScanDist: Scans a line between two X values until a point is reached
+; that does not match the border color. If such a point is found, a
+; cleared carry and the corresponding X value in bx are returned,
+; otherwise a set carry.
 ;
-; Eingabe:      AX = Y
+; Input:        AX = Y
 ;               BX = X1
 ;               CX = X2
-;               ES = Video-Segment
+;               ES = Video segment
 ;
 
 
 PROC    ScanDist
 
         push    di
-        CalcAdr                         ; Adresse berechnen
-        xchg    di, ax                  ; Offset nach di
+        CalcAdr                         ; Calculate address
+        xchg    di, ax                  ; Offset to di
 
-; Maximale Anzahl zu durchsuchender Bytes berechnen
+; Calculate maximum number of bytes to search
 
         sub     cx, bx
         inc     cx
 
-; Den jetzigen Offset vom X-Wert subtrahieren
+; Subtract current offset from X value
 
         sub     bx, di
 
-; Randfarbe nach al
+; Border color into al
 
         mov     al, [BorderColor]
         cld
 
-; PrÅfen ob zwischendrin ein öberlauf auftreten kann
+; Check if an overflow can occur in between
 
         mov     dx, di
         add     dx, cx
         jnc     @@L1
         mov     cx, di
         neg     cx
-        push    dx                      ; Restzahl auf Stack
+        push    dx                      ; Remaining count on stack
 
-; Mit REP SCASB scannen
+; Scan with REP SCASB
 
         repe    scasb
-        pop     cx                      ; Neuer ZÑhler
-        jne     @@L2                    ; Springe wenn gefunden
+        pop     cx                      ; New counter
+        jne     @@L2                    ; Jump if found
 
-; NÑchstes Segment setzen
+; Set next segment
 
-        inc     [Seg64]                 ; öberlauf...
+        inc     [Seg64]                 ; overflow...
         call    [SegSelect]
 
-; Zweite (bzw. einzige) HÑlfte scannen
+; Scan second (or only) half
 
 @@L1:   repe    scasb
-        je      @@L3                    ; Springe wenn nicht gefunden
-@@L2:   dec     di                      ; Auf das gefundene Byte stellen
-        add     bx, di                  ; Und passenden X-Wert rechnen
+        je      @@L3                    ; Jump if not found
+@@L2:   dec     di                      ; Set to found byte
+        add     bx, di                  ; And calculate matching X value
 
-; Ende
+; End
 
         clc
         pop     di
@@ -219,10 +221,10 @@ PROC    ScanDist
 ENDP    ScanDist
 
 ;---------------------------------------------------------------------------
-; FÅllen einer horizontalen Linie. Die Linie endet wenn ein Punkt der Randfarbe
-; oder die Grenze des Clipfensters erreicht ist.
+; Filling a horizontal line. The line ends when a point in the border color
+; or the edge of the clip window is reached.
 ;
-; Eingabe:      AX = Y
+; Input:        AX = Y
 ;               BX = X
 ;
 
@@ -230,53 +232,53 @@ PROC    FillHoriz
 
         push    di
 
-        mov     di, ax                  ; Y-Wert fÅr Muster
+        mov     di, ax                  ; Y value for pattern
         and     di, 7                   ; mod 8
-        mov     ch, [FillPattern + di]  ; FÅllmuster holen
-        mov     cl, bl                  ; X-Wert, low Byte
-        rol     ch, cl                  ; FÅllmuster align
+        mov     ch, [FillPattern + di]  ; Get fill pattern
+        mov     cl, bl                  ; X value, low byte
+        rol     ch, cl                  ; Align fill pattern
 
-        CalcAdr                         ; Adresse berechnen
-        xchg    di, ax                  ; Offset nach di
+        CalcAdr                         ; Calculate address
+        xchg    di, ax                  ; Offset to di
 
-; Variableninit
+; Variable init
 
-@@L1:   mov     cl, [FillColor]         ; Farbe holen
+@@L1:   mov     cl, [FillColor]         ; Get color
         mov     ax, [CurrXR]
-        mov     [PrevXR], ax            ; Umspeichern
+        mov     [PrevXR], ax            ; Save
 
-; Suchschleife, X = bx
+; Search loop, X = bx
 
         mov     al, [BorderColor]
-        mov     dx, [Clip_X2]           ; Ins Register fÅr Speed
+        mov     dx, [Clip_X2]           ; Into register for speed
 
-@@L2:   cmp     bx, dx                  ; Rand des Clipfensters ?
-        jg      @@L5                    ; Ja: Ende
-        cmp     al, [es:di]             ; Randfarbe ?
-        je      @@L5                    ; Ja: Ende
+@@L2:   cmp     bx, dx                  ; Edge of clip window?
+        jg      @@L5                    ; Yes: end
+        cmp     al, [es:di]             ; Border color?
+        je      @@L5                    ; Yes: end
 
-        rol     ch, 1                   ; Muster rotieren
-        jnc     @@L3                    ; Springe wenn kein Punkt
-        mov     [es:di], cl             ; Punkt in FÅllfarbe setzen
+        rol     ch, 1                   ; Rotate pattern
+        jnc     @@L3                    ; Jump if no point
+        mov     [es:di], cl             ; Set point in fill color
         jmp     @@L4
-@@L3:   mov     [BYTE es:di], 0         ; Punkt in Hintergrundfarbe setzen
+@@L3:   mov     [BYTE es:di], 0         ; Set point in background color
 
-; NÑchstes Pixel adressieren
+; Address next pixel
 
 @@L4:   inc     bx                      ; X := X + 1;
         inc     di
-        jnz     @@L2                    ; NÑchstes
+        jnz     @@L2                    ; Next
 
-; SegmentÅberlauf behandeln
+; Handle segment overflow
 
-        inc     [Seg64]                 ; ein Segment hîher
-        call    [SegSelect]             ; einstellen
-        jmp     @@L2                    ; Und nÑchstes Pixel
+        inc     [Seg64]                 ; one segment higher
+        call    [SegSelect]             ; set
+        jmp     @@L2                    ; And next pixel
 
-; Fertig, Grenze gefunden
+; Done, edge found
 
-@@L5:   dec     bx                      ; Letztes Pixel davor
-        mov     [CurrXR], bx            ; ... merken
+@@L5:   dec     bx                      ; Last pixel before
+        mov     [CurrXR], bx            ; ... remember
         pop     di
         ret
 
@@ -284,17 +286,17 @@ ENDP    FillHoriz
 
 ;---------------------------------------------------------------------------
 ;
-; ScanLine. Bekommt einen Y-Wert und zwei X-Werte Åbergeben. Sucht zwischen
-; den beiden X-Werten und trÑgt alle Punkte, die nicht die Randfarbe enthalten
-; in den Stack ein (bzw. den linken Punkte einer Linie).
+; ScanLine. Receives a Y value and two X values. Searches between the two
+; X values and enters all points that do not match the border color into
+; the stack (or the leftmost point of a line).
 ;
-; Eingabe:      AX = Y
+; Input:        AX = Y
 ;               BX = XL
 ;               CX = XR
 ;               DX = Dir
 ;
-; Ergebnis:     Carry bei einem StackÅberlauf
-;               Carry clear wenn alles klar
+; Result:       Carry on stack overflow
+;               Carry clear if all ok
 
 
 PROC    ScanLine
@@ -305,66 +307,66 @@ PROC    ScanLine
         mov     bp, ax                  ; bp = Y
         mov     si, dx                  ; si = Dir
 
-; Adresse des Pixels bei XL/Y rechnen
+; Calculate address of pixel at XL/Y
 
         CalcAdr
-        mov     di, ax                  ; Offset nach di
+        mov     di, ax                  ; Offset to di
 
-; Variableninit
+; Variable init
 
-        mov     al, [BorderColor]       ; Farbe nach al
-        mov     dx, bx                  ; XL nach dx
+        mov     al, [BorderColor]       ; Color into al
+        mov     dx, bx                  ; XL into dx
 
-; Nach rechts suchen bis Ende oder bis ein Pixel != Randfarbe gefunden ist
+; Search to the right until end or a pixel != border color is found
 
 @@L2:   cmp     dx, cx                  ; XL > XR ?
-        jg      @@L7                    ; Dann Ende
-        cmp     [es:di], al             ; Randfarbe ?
-        jne     @@L4                    ; Springe wenn Farbe != Randfarbe
+        jg      @@L7                    ; Then end
+        cmp     [es:di], al             ; Border color?
+        jne     @@L4                    ; Jump if color != border color
 
 @@L3:   inc     dx                      ; XL++
         inc     di
         jnz     @@L2
 
-; Behandle Segment-öberlauf
+; Handle segment overflow
 
         inc     [Seg64]
         call    [SegSelect]
         jmp     @@L2
 
-; Es wurde ein Pixel != der Randfarbe gefunden. Dieses in den Stack eintragen
+; A pixel != border color was found. Enter this into the stack
 
 @@L4:   mov     bx, [StackPtr]
-        cmp     bx, [StackTop]          ; Stack-öberlauf ?
-        jae     @@L9                    ; Springe wenn ja
-        mov     ax, dx                  ; XR-Wert
-        test    si, si                  ; Direction prÅfen
-        jge     @@L5                    ; Springe wenn R->L
-        not     ax                      ; Sonst Flag setzen
-@@L5:   mov     [ss:bx], ax             ; X-Wert auf Stack
-        mov     [ss:bx+2], bp           ; Y-Wert auf Stack
-        add     [StackPtr], 4           ; Zwei Worte mehr auf dem Stack
+        cmp     bx, [StackTop]          ; Stack overflow?
+        jae     @@L9                    ; Jump if yes
+        mov     ax, dx                  ; XR value
+        test    si, si                  ; Check direction
+        jge     @@L5                    ; Jump if R->L
+        not     ax                      ; Otherwise set flag
+@@L5:   mov     [ss:bx], ax             ; X value onto stack
+        mov     [ss:bx+2], bp           ; Y value onto stack
+        add     [StackPtr], 4           ; Two words more on the stack
 
-; Jetzt weitersuchen bis Ende oder ein Pixel = Randfarbe gefunden
-; (d.h. Ende der Linie suchen)
+; Now continue searching until end or a pixel = border color is found
+; (i.e. search for end of line)
 
         mov     al, [BorderColor]
 @@L6:   cmp     dx, cx                  ; XL > XR ?
-        jg      @@L7                    ; Springe wenn Ende
+        jg      @@L7                    ; Jump if end
         cmp     [es:di], al
-        je      @@L3                    ; Gefunden, weiter wie oben
+        je      @@L3                    ; Found, continue as above
 
         inc     dx                      ; XL++
         inc     di
         jnz     @@L6
 
-; Segment-öberlauf behandeln
+; Handle segment overflow
 
         inc     [Seg64]
         call    [SegSelect]
         jmp     @@L6
 
-; Ende
+; End
 
 @@L7:   clc
 @@L8:   pop     si
@@ -372,9 +374,9 @@ PROC    ScanLine
         pop     bp
         ret
 
-; Ende wenn Stack-öberlauf
+; End if stack overflow
 
-@@L9:   mov     [DST.Stat], grNoFloodMem        ; Fehlerflag setzen
+@@L9:   mov     [DST.Stat], grNoFloodMem        ; Set error flag
         stc
         jmp     @@L8
 
@@ -382,11 +384,11 @@ ENDP    ScanLine
 
 ;---------------------------------------------------------------------------
 ; CheckStack:
-; ErhÑlt eine Koordinate Åbergeben und prÅft, ob diese im Stack enthalten ist.
-; Wenn ja wird sie gelîscht und ein Carry kommt zurÅck, wenn Nein passiert
-; nichts und ein gelîschtes Carry kommt zurÅck.
+; Receives a coordinate and checks if it is contained in the stack.
+; If yes, it is deleted and a carry is returned, if not, nothing happens
+; and a cleared carry is returned.
 ;
-; Eingabe:      AX = Y
+; Input:        AX = Y
 ;               BX = X
 ;               CX = Dir
 ;
@@ -397,68 +399,68 @@ PROC    CheckStack      NEAR
         test    cx, cx
         jge     @@L1
         not     bx
-@@L1:   mov     bp, StackBot-4          ; Stackstart nach bp
-        mov     dx, [StackPtr]          ; Stackzeiger nach dx
+@@L1:   mov     bp, StackBot-4          ; Stack start to bp
+        mov     dx, [StackPtr]          ; Stack pointer to dx
 
-; Suchschleife
+; Search loop
 
-@@L2:   add     bp, 4                   ; NÑchstes Element
-        cmp     bp, dx                  ; Stackende erreicht ?
-        je      @@L6                    ; Ja, fertig (nicht gefunden)
-        cmp     bx, [bp]                ; Stimmt der X-Wert ?
-        jne     @@L2                    ; Nein, nÑchstes
-        cmp     ax, [bp+2]              ; Stimmt der Y-Wert ?
-        jne     @@L2                    ; Nein, nÑchstes
+@@L2:   add     bp, 4                   ; Next element
+        cmp     bp, dx                  ; Stack end reached?
+        je      @@L6                    ; Yes, done (not found)
+        cmp     bx, [bp]                ; Does X value match?
+        jne     @@L2                    ; No, next
+        cmp     ax, [bp+2]              ; Does Y value match?
+        jne     @@L2                    ; No, next
 
-; Das Element wurde gefunden. Lîschen.
+; Element found. Delete.
 
 @@L3:   sub     dx, 4                   ; StackPtr -= 4;
-        mov     [StackPtr], dx          ; Und merken
+        mov     [StackPtr], dx          ; And remember
         mov     cx, dx                  ; StackPtr
-        sub     cx, bp                  ; = Anzahl Bytes
+        sub     cx, bp                  ; = number of bytes
 IF P80386
-        shr     cx, 2                   ; / 4 wegen Doppelworten
-        jcxz    @@L5                    ; bereits erledigt
+        shr     cx, 2                   ; / 4 because of double words
+        jcxz    @@L5                    ; already done
 
-; Verschieben (80386)
+; Shift (80386)
 
 @@L4:   mov     eax, [bp+4]
-        mov     [bp], eax               ; verschieben
+        mov     [bp], eax               ; shift
         add     bp, 4
         loopcx  @@L4
 ELSE
-        shr     cx, 1                   ; / 2 wegen Worten
-        jcxz    @@L5                    ; bereits erledigt
+        shr     cx, 1                   ; / 2 because of words
+        jcxz    @@L5                    ; already done
 
-; Verschieben (8086)
+; Shift (8086)
 
-        mov     dx, ds                  ; ds retten
-        mov     bx, es                  ; es retten
+        mov     dx, ds                  ; save ds
+        mov     bx, es                  ; save es
         mov     ax, ss
         mov     ds, ax
         mov     es, ax                  ; es=ds=ss
 
-        xchg    di, bp                  ; Zieladresse (di retten)
-        xchg    ax, si                  ; si retten
-        lea     si, [di+4]              ; Quelladresse
+        xchg    di, bp                  ; destination address (save di)
+        xchg    ax, si                  ; save si
+        lea     si, [di+4]              ; source address
 
         cld
-        rep     movsw                   ; verschieben
+        rep     movsw                   ; shift
 
-        mov     ds, dx                  ; Altes ds
-        mov     es, bx                  ; Altes es
-        mov     di, bp                  ; Altes di
-        xchg    ax, si                  ; Altes si
+        mov     ds, dx                  ; old ds
+        mov     es, bx                  ; old es
+        mov     di, bp                  ; old di
+        xchg    ax, si                  ; old si
 
 ENDIF
 
-; Ende wenn gefunden
+; End if found
 
 @@L5:   stc
         pop     bp
         ret
 
-; Ende wenn nicht gefunden
+; End if not found
 
 @@L6:   clc
         pop     bp
@@ -476,7 +478,7 @@ LOCAL   CurY: WORD, CurXL: WORD, PrevXL: WORD, Dir: WORD, \
         NewXL: WORD, T: WORD = LocalSize
 
 
-; Stackframe aufbauen
+; Build stack frame
 
         EnterProc LocalSize
         push    di
@@ -619,13 +621,13 @@ LOCAL   CurY: WORD, CurXL: WORD, PrevXL: WORD, Dir: WORD, \
         mov     cx, [FillDir]
         neg     cx
         call    CheckStack              ; ax = Y, bx = X
-        jnc     @@L0                    ; NÑchste Runde
+        jnc     @@L0                    ; Next round
 
-; Ende mit Carry Clear
+; End with carry clear
 
 @@L1:   clc
 
-; Einsprung mit gesetztem Carry
+; Entry with carry set
 
 @@L9:   pop     si
         pop     di
@@ -636,41 +638,39 @@ ENDP    Scan
 
 
 ;---------------------------------------------------------------------
-; Eigentliche FloodFill-Routine
+; Actual FloodFill routine
 ;
-; Der Eintritt erfolgt mit dem FloodFill-Stack, d.h. dem Puffer, der
-; von GRAPH fÅr FloodFill, FillPoly etc. reserviert ist und der vom
-; Benutzer nach Bedarf vergrî·ert werden kann. Der Linien-Stack wird
-; auf diesen Stack gelegt, indem der Stackpointer nach StackTop kopiert
-; wird. Der SP wird auf den Wert StackBot gesetzt (das sollte ein fÅr
-; das System einigerma·en hinreichender Wert sein, hier werden 512 Bytes
-; gewÑhlt. ACHTUNG: StackBot mu· durch 4 teilbar sein !!! (sonst Gefahr
-; des unkontrollierten öberlaufs, da nicht fÅr jedes Byte sondern nur alle
-; viere der öberlauf getestet wird).
-
+; Entry occurs with the FloodFill stack, i.e. the buffer reserved by
+; GRAPH for FloodFill, FillPoly etc., and which can be enlarged by the
+; user as needed. The line stack is placed on this stack by copying the
+; stack pointer to StackTop. The SP is set to the value StackBot (this
+; should be a reasonably sufficient value for the system, here 512 bytes
+; are chosen. NOTE: StackBot must be divisible by 4!!! (otherwise there
+; is a risk of uncontrolled overflow, since overflow is only tested every
+; four bytes, not every byte).
 PROC    FloodFill
 
-; PrÅfen ob mindestens 100 Bytes an Puffer auf dem Stack zur VerfÅgung stehen
+; Check if at least 100 bytes of buffer are available on the stack
 
         cmp     sp, StackBot + 100
-        ja      @@L0                    ; Ok, es ist Platz
-        mov     [DST.Stat], grNoFloodMem; Fehler setzen
-        ret                             ; Und Ende
+        ja      @@L0                    ; Ok, there is space
+        mov     [DST.Stat], grNoFloodMem; Set error
+        ret                             ; And end
 
-; Warten bis die GE bereit ist
+; Wait until the GE is ready
 
 @@L0:   call    [GE_Ready]
 
-; Puffer im Stackbereich korrekt setzen
+; Set buffer in stack area correctly
 
-        mov     dx, sp                  ; Stacktop holen
-        mov     sp, StackBot            ; Stack neu setzen
-        mov     [StackPtr], sp          ; Stack wÑchst von unten nach oben
-        push    dx                      ; unverÑnderten Wert merken
-        and     dx, 0FFFCh              ; auf Doppelwortgrenze bringen
-        mov     [StackTop], dx          ; Und als obere Grenze merken
+        mov     dx, sp                  ; Get stack top
+        mov     sp, StackBot            ; Set new stack
+        mov     [StackPtr], sp          ; Stack grows from bottom up
+        push    dx                      ; Save unchanged value
+        and     dx, 0FFFCh              ; Align to double word boundary
+        mov     [StackTop], dx          ; And remember as upper limit
 
-; Variable initialisieren
+; Initialize variables
 
         mov     [FillDir], -1
         mov     [BorderColor], cl
@@ -678,20 +678,20 @@ PROC    FloodFill
         mov     di, bx                  ; SeedY
         mov     es, [VideoSeg]
 
-; Farbe am Startpunkt prÅfen. Wenn es direkt die Randfarbe ist --> Ende
+; Check color at start point. If it is directly the border color --> end
 
         xchg    ax, bx                  ; ax=Y, bx=X
         mul     [BytesPerLine]
         add     bx, ax
         adc     dl, 0
         mov     [Seg64], dl
-        call    [SegSelect]             ; Segment einstellen
-        cmp     [es:bx], cl             ; Farbe = Randfarbe ?
-        je      @@L99                   ; Ende wenn ja
+        call    [SegSelect]             ; Set segment
+        cmp     [es:bx], cl             ; Color = border color?
+        je      @@L99                   ; End if yes
 
-; So weit wie mîglich nach links gehen und diesen Punkt als Startpunkt
-; auf den Stack. Dann soweit wie mîglich (ohne auf den Rand zu sto·en)
-; nach rechts und diesen Punkt als rechtesten Punkt merken.
+; Go as far left as possible and put this point as start point on the
+; stack. Then go as far right as possible (without hitting the border)
+; and remember this point as the rightmost point.
 
         mov     ax, di                  ; SeedY
         mov     bx, si                  ; SeedX
@@ -707,7 +707,7 @@ PROC    FloodFill
         mov     [CurrXR], bx
         jmp     @@L3
 
-; Einen Wert vom Stack. Ende wenn Stack leer
+; Get a value from the stack. End if stack is empty
 
 @@L1:   mov     bp, [StackPtr]
         cmp     bp, StackBot
@@ -717,22 +717,22 @@ PROC    FloodFill
         mov     si, [bp]                ; X
         mov     di, [bp+2]              ; Y
 
- ; Direction aus dem X-Wert extrahieren und FillDir setzen
+ ; Extract direction from X value and set FillDir
 
         mov     ax, 1                   ; Dir = 1
-        test    si, si                  ; Flag fÅr Dir negativ ?
+        test    si, si                  ; Flag for Dir negative?
         jge     @@L2
         not     si                      ; X
         neg     ax                      ; Dir
 @@L2:   mov     [FillDir], ax
 
-; Die Linie die auf dem Stack lag ziehen
+; Draw the line that was on the stack
 
         mov     ax, di
         mov     bx, si
         call    FillHoriz
 
-; PrÅfen ob diese Linie nochmals auf dem Stack liegt, lîschen wenn ja
+; Check if this line is still on the stack, delete if yes
 
         mov     cx, [FillDir]
         neg     cx
@@ -746,10 +746,9 @@ PROC    FloodFill
         push    si
         call    Scan
         jnc     @@L1
-@@L99:  pop     sp                      ; Alter SP-Wert
+@@L99:  pop     sp                      ; Old SP value
         ret
 
 ENDP    FloodFill
 
 
-
