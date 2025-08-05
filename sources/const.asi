@@ -1,6 +1,8 @@
+; [Comments translated from German to English]
+
 ; *****************************************************************************
 ; *                                                                           *
-; *                   Konstanten fÅr den SVGA.BGI Treiber                     *
+; *                   Constants for the SVGA.BGI driver                       *
 ; *                                                                           *
 ; * (C) 1990-94                                                               *
 ; * Ullrich von Bassewitz                                                     *
@@ -13,17 +15,17 @@
 
 
 ;---------------------------------------------------
-; Allgemeine Konstanten
+; General constants
 
-MaxColors               =       256             ; 256 Farben zulÑssig
-AvailColors             =       16              ; 16 verfÅgbar
-ModeCount               =       44              ; Bisher unterstÅtzte Modi
-MaxAutoMode             =       6               ; Maximaler Autodetect-Modus
+MaxColors               =       256             ; 256 colors allowed
+AvailColors             =       16              ; 16 available
+ModeCount               =       44              ; Supported modes so far
+MaxAutoMode             =       6               ; Maximum autodetect mode
 
 EmptyFill               =       0
 SolidFill               =       1
 
-; Fehlercodes
+; Error codes
 
 grOk                    =   0
 grNoInitGraph           =  -1
@@ -45,7 +47,7 @@ grInvalidDeviceNum      = -15
 
 ; --------------------------------------------------------------
 ;
-; Konstanten fÅr BGI-Treiber Funktionen
+; Constants for BGI driver functions
 ;
 
 FuncInstall             =       0
@@ -81,23 +83,23 @@ FuncColorQuery          =      58
 
 ; --------------------------------------------------------------
 ;
-; Konstanten fÅr Karten (fÅr Autodetect)
+; Constants for cards (for autodetect)
 ;
 
-GenericVGA              =  0            ; stinknormale VGA
-ET3000VGA               =  1            ; ET3000 Chipsatz
-ET4000VGA               =  2            ; ET4000 Chipsatz
-TridentVGA              =  3            ; Trident 8900 Chipsatz
-Video7VGA               =  4            ; Video7 1024i oder VEGA VGA
+GenericVGA              =  0            ; plain VGA
+ET3000VGA               =  1            ; ET3000 chipset
+ET4000VGA               =  2            ; ET4000 chipset
+TridentVGA              =  3            ; Trident 8900 chipset
+Video7VGA               =  4            ; Video7 1024i or VEGA VGA
 ParadiseVGA             =  5            ; Paradise VGA
 ATIVGA                  =  6            ; ATI VGAWonder
 EverexVGA               =  7            ; Everex
 OakVGA                  =  8            ; OAK
-S3VGA                   =  9            ; S3 Chipsatz
-VESAVGA                 =  10           ; VGA unterstÅtzt VESA-Standard
+S3VGA                   =  9            ; S3 chipset
+VESAVGA                 =  10           ; VGA supports VESA standard
 
-; Konstanten fÅr die wichtigsten Videomodi. Kînnen zu einem BitSet zusammen-
-; gefÅgt werden um die mîglichen Modi einer Karte zu beschreiben.
+; Constants for the most important video modes. Can be combined into a BitSet
+; to describe the possible modes of a card.
 
 M320x200                = 0001h
 M640x350                = 0002h
@@ -106,13 +108,12 @@ M640x480                = 0008h
 M800x600                = 0010h
 M1024x768               = 0020h
 M1280x1024              = 0040h
-MAll                    = 007Fh         ; Alle obigen Modi
+MAll                    = 007Fh         ; All of the above modes
 
 
-; Konstanten fÅr mîgliche Optionen, die Åber's Environment festgelegt werden.
+; Constants for possible options that can be set via the environment.
 
-OpFastVesaOff           = 0001h         ; Keine PM VESA-Aufrufe
-OpNoVesa                = 0002h         ; VESA-Treiber nicht verwenden
-OpNoS3Hardware          = 0004h         ; S3 Graphics Engine nicht verwenden
-OpUseVesaModes          = 0008h         ; VESA-Modusnummern verwenden
-
+OpFastVesaOff           = 0001h         ; No PM VESA calls
+OpNoVesa                = 0002h         ; Do not use VESA driver
+OpNoS3Hardware          = 0004h         ; Do not use S3 Graphics Engine
+OpUseVesaModes          = 0008h         ; Use VESA mode numbers
