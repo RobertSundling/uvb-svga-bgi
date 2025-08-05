@@ -1,11 +1,13 @@
+; [Comments translated from German to English]
+
 ; *****************************************************************************
 ; *                                                                           *
-; *            S3 spezifische Routinen fÅr den SVGA.BGI Treiber               *
+; *            S3 specific routines for the SVGA.BGI driver                   *
 ; *                                                                           *
 ; * (C) 1990-94 by                                                            *
 ; * Ullrich von Bassewitz                                                     *
-; * ZwehrenbÅhlstra·e 33                                                      *
-; * D-72070 TÅbingen                                                          *
+; * ZwehrenbÔøΩhlstraÔøΩe 33                                                      *
+; * D-72070 TÔøΩbingen                                                          *
 ; *                                                                           *
 ; * E-Mail: uz@ibb.schwaben.de                                                *
 ; *                                                                           *
@@ -14,8 +16,8 @@
 
 
 ; -----------------------------------------------------------------------
-; Defines fÅr die erweiterten Register des S3 Chipsatzes. Die Bezeichner
-; entsprechen denen aus dem Handbuch
+; Defines for the extended registers of the S3 chipset. The identifiers
+; correspond to those in the manual
 ;
 
 ADVFUNC_CNTL            = 04AE8h
@@ -46,10 +48,10 @@ PIX_TRANS               = 0E2E8h
 
 
 ; -----------------------------------------------------------------------
-; Diverse Macros.
+; Various macros.
 ;
 
-; Macro der wartet bis im Befehls-FIFO eine bestimmte Anzahl PlÑtze frei sind
+; Macro that waits until a certain number of places are free in the command FIFO
 
 MACRO   S3_Wait CmdCount
 LOCAL   L
@@ -62,7 +64,7 @@ L:      in      ax, dx
 ENDM
 
 
-; Macro der einen Wert auf einen S3 Port ausgibt
+; Macro that outputs a value to an S3 port
 
 MACRO   S3_Out  Port
 
@@ -72,19 +74,19 @@ MACRO   S3_Out  Port
 ENDM
 
 ; -----------------------------------------------------------------------
-; Line-Routine unter Verwendung der S3 Graphics Engine
+; Line routine using the S3 Graphics Engine
 ;
-; Wird aufgerufen mit X1/Y1 = ax/bx, X2/Y2 = cx/dx
+; Called with X1/Y1 = ax/bx, X2/Y2 = cx/dx
 ;
 
 PROC    S3_Vect Near
 
-; X und Y Startwerte fÅr spÑter auf den Stack
+; X and Y start values for later on the stack
 
         push    bx                      ; Y1
         push    ax                      ; X1
 
-; Diverse Werte rechnen
+; Calculate various values
 
         mov     di, 10100000b
 
@@ -102,11 +104,11 @@ PROC    S3_Vect Near
         or      di, 0040h
 @@A3:   mov     bx, dx                  ; bx = Min, cx = Max
 
-; Auf freie FIFO PlÑtze warten
+; Wait for free FIFO places
 
         S3_Wait 7
 
-; Vordergrund Farbe und Vordergrund Mix setzen
+; Set foreground color and foreground mix
 
         mov     ax, 27h                 ; Normal mode
         cmp     [WriteMode], 0
@@ -123,7 +125,7 @@ PROC    S3_Vect Near
 
         S3_Out  FRGD_COLOR
 
-; Jetzt durchgezogene/gestrichelte Linien unterscheiden
+; Now distinguish between solid/dashed lines
 
         cmp     [LinePattern], 0FFFFh
         jnz     @@L5
@@ -133,11 +135,11 @@ PROC    S3_Vect Near
         mov     ax, 0A000h
         S3_Out  MULTIFUNC_CNTL
 
-; Warten bis 7 FIFO PlÑtze frei sind
+; Wait until 7 FIFO places are free
 
         S3_Wait 7
 
-; Startwert fÅr X/Y schreiben
+; Write start value for X/Y
 
         pop     ax                      ; X1
         S3_Out  CUR_X
@@ -175,8 +177,8 @@ PROC    S3_Vect Near
 
         ret
 
-; Linie mit Muster
-; Background Mix und Hintergrundfarbe so setzen, dass der Hintergrund bleibt
+; Line with pattern
+; Set background mix and background color so that the background remains
 
 @@L5:   mov     ax, 3
         S3_Out  BKGD_MIX
@@ -194,11 +196,11 @@ PROC    S3_Vect Near
         mov     ax, 0A080h
         S3_Out  MULTIFUNC_CNTL
 
-; Warten bis 7 FIFO PlÑtze frei sind
+; Wait until 7 FIFO places are free
 
         S3_Wait 7
 
-; Startwert fÅr X/Y schreiben
+; Write start value for X/Y
 
         pop     ax                      ; X1
         S3_Out  CUR_X
@@ -234,7 +236,7 @@ PROC    S3_Vect Near
         or      ax, di
         S3_Out  CMD
 
-; Muster raushauen
+; Output pattern
 
         mov     ax, [LinePattern]
         S3_Out  COLOR_CMP
@@ -245,7 +247,7 @@ ENDP    S3_Vect
 
 ; ======================================================================
 ;
-; Ready: Wartet bis der Grafikprozessor arbeitslos ist
+; Ready: Waits until the graphics processor is idle
 ;
 
 PROC    S3_Ready        NEAR
@@ -264,15 +266,15 @@ ENDP    S3_Ready
 
 ; ======================================================================
 ;
-; CLEAR: Lîscht den Grafik-Bildschirm
+; CLEAR: Clears the graphics screen
 ;
-; Es wird der S3-Befehl zum Zeichnen eines Rechtecks verwendet
+; The S3 command for drawing a rectangle is used
 ;
 
 PROC    S3_Clear NEAR
 
-; Warten bis genÅgend FIFO PlÑtze frei sind, dann Vordergrund-Mix, die Farbe
-; und das Kontrollregister setzen
+; Wait until enough FIFO places are free, then set foreground mix, the color
+; and the control register
 
         S3_Wait 3
 
@@ -283,7 +285,7 @@ PROC    S3_Clear NEAR
         mov     ax, 0A000h
         S3_Out  MULTIFUNC_CNTL
 
-; Zeichenoperation durchfÅhren
+; Perform drawing operation
 
         S3_Wait 5
 
@@ -317,14 +319,13 @@ ENDP    S3_Clear
 ;
 PROC    S3_FillStyle    NEAR
 
-; Zuerst das alte FillStyle zum Setzen des Musters aufrufen
+; First call the old FillStyle to set the pattern
 
         call    FillStyle
 
-; Jetzt fÅr das schnelle FÅllen von gemusterten FlÑchen ausserhalb des
-; sichtbaren Bildschirms ein 8x8 grosses Rechteck mit dem aktuellen Muster
-; fÅllen. Dazu einfach PatBar benutzen (_nicht_ S3_PatBar) und zuvor den
-; Offset fÅr die Schreibseite auf 0 setzen
+; Now, for fast filling of patterned areas outside the visible screen,
+; fill an 8x8 rectangle with the current pattern. For this, simply use
+; PatBar (not S3_PatBar) and set the offset for the write page to 0 before.
 
         push    [PageOfs]
         xor     ax, ax
@@ -335,7 +336,7 @@ PROC    S3_FillStyle    NEAR
         call    PatBar
         pop     [PageOfs]
 
-; Fertig!
+; Done!
 
         ret
 
@@ -361,11 +362,11 @@ ENDP    S3_FillStyle
 
 PROC    S3_PatBar       NEAR
 
-; X1/Y1 und X2/Y2 so umnudeln das X1<=X2 und Y1<=Y2.
-; X2 und Y2 werden nur benîtigt um Breite und Hîhe zu rechnen und werden nicht
-; gespeichert
-; Die Umtauscherei am Anfang ist leider notwendig, wenn auch nicht
-; dokumentiert...
+; Rearrange X1/Y1 and X2/Y2 so that X1<=X2 and Y1<=Y2.
+; X2 and Y2 are only needed to calculate width and height and are not
+; stored.
+; The swapping at the beginning is unfortunately necessary, even if not
+; documented...
 
         cmp     ax, cx
         jb      @@L1
@@ -374,10 +375,10 @@ PROC    S3_PatBar       NEAR
         jb      @@L2
         xchg    bx, dx
 
-; X1/Y1, X2/Y2 in X/Y und Hîhe/Breite umrechnen
+; Convert X1/Y1, X2/Y2 into X/Y and height/width
 
-@@L2:   sub     cx, ax                  ; cx = Breite
-        sub     dx, bx                  ; dx = Hîhe
+@@L2:   sub     cx, ax                  ; cx = width
+        sub     dx, bx                  ; dx = height
         push    dx
         push    ax
 
@@ -386,7 +387,7 @@ PROC    S3_PatBar       NEAR
         cmp     [FillPatternNum], EmptyFill
         jz      @@L3
 
-; Es ist ein gemustertes Rechteck, PatBLT verwenden
+; It is a patterned rectangle, use PatBLT
 
         S3_Wait 2
 
@@ -395,7 +396,7 @@ PROC    S3_PatBar       NEAR
         mov     ax, 0067h
         S3_Out  FRGD_MIX
 
-; Zeichenoperation durchfÅhren
+; Perform drawing operation
 
         S3_Wait 7
 
@@ -418,8 +419,8 @@ PROC    S3_PatBar       NEAR
         ret
 
 
-; Warten bis genÅgend FIFO PlÑtze frei sind, dann Vordergrund-Mix, die Farbe
-; und das Kontrollregister setzen
+; Wait until enough FIFO places are free, then set foreground mix, the color
+; and the control register
 
 @@L3:   S3_Wait 3
 
@@ -435,7 +436,7 @@ PROC    S3_PatBar       NEAR
         mov     ax, 0A000h
         S3_Out  MULTIFUNC_CNTL
 
-; Zeichenoperation durchfÅhren
+; Perform drawing operation
 
         S3_Wait 5
 
@@ -458,13 +459,13 @@ ENDP    S3_PatBar
 
 ; ================================================================
 ;
-; Ziehen einer horizontalen Linie im aktuellen FÅllmuster ohne Clipping
+; Draw a horizontal line in the current fill pattern without clipping
 ;
-; Unterprogramm fÅr FullEllipsePlot und FillPoly. Wird aufgerufen mit ax = Y,
+; Subroutine for FullEllipsePlot and FillPoly. Called with ax = Y,
 ; bx = X1, cx = X2, es = VideoSegment.
 ;
-; Frei verwendet werden dÅrfen ax, bx, cx, dx, si, di
-; Ihre Werte behalten mÅssen es, ds, bp, ss, cs
+; ax, bx, cx, dx, si, di may be used freely
+; The values that must be preserved: es, ds, bp, ss, cs
 ;
 
 PROC    S3_HorLineInit  NEAR
@@ -472,11 +473,11 @@ PROC    S3_HorLineInit  NEAR
         push    ax
         push    dx
 
-; Auf freie FIFO PlÑtze warten
+; Wait for free FIFO places
 
         S3_Wait 5
 
-; Vordergrund Farbe und Vordergrund Mix setzen
+; Set foreground color and foreground mix
 
         mov     ax, 27h                 ; Normal mode
         S3_Out  FRGD_MIX
@@ -489,7 +490,7 @@ PROC    S3_HorLineInit  NEAR
 
         S3_Out  FRGD_COLOR
 
-; Background Mix und Hintergrundfarbe setzen
+; Set background mix and background color
 
         mov     ax, 07h
         S3_Out  BKGD_MIX
@@ -508,7 +509,7 @@ PROC    S3_HorLineInit  NEAR
         mov     ax, 0A080h
         S3_Out  MULTIFUNC_CNTL
 
-; Und Ende
+; And done
 
         pop     dx
         pop     ax
@@ -520,11 +521,11 @@ ENDP    S3_HorLineInit
 
 PROC    S3_HorLine      NEAR
 
-; Y Startwert fÅr spÑter auf den Stack
+; Y start value for later on the stack
 
         mov     di, ax                  ; Y
 
-; Muster holen
+; Get pattern
 
         mov     si, ax                  ; Y
         and     si, 7
@@ -532,15 +533,15 @@ PROC    S3_HorLine      NEAR
         xchg    cx, bx                  ; cx = X1, bx = X2
         rol     al, cl
         xchg    cx, bx                  ; cx = X2, bx = X1
-        sub     cx, bx                  ; cx = Breite-1
-        mov     ah, al                  ; Muster in ax
-        mov     si, ax                  ; Muster in si
+        sub     cx, bx                  ; cx = width-1
+        mov     ah, al                  ; pattern in ax
+        mov     si, ax                  ; pattern in si
 
-; Warten bis 7 FIFO PlÑtze frei sind
+; Wait until 7 FIFO places are free
 
         S3_Wait 7
 
-; Startwert fÅr X/Y schreiben
+; Write start value for X/Y
 
         mov     ax, bx                  ; X
         S3_Out  CUR_X
@@ -571,7 +572,7 @@ PROC    S3_HorLine      NEAR
         mov     ax, 02337h
         S3_Out  CMD
 
-; Muster raushauen
+; Output pattern
 
         mov     ax, si
         S3_Out  COLOR_CMP
@@ -580,4 +581,3 @@ PROC    S3_HorLine      NEAR
 ENDP    S3_HorLine
 
 
-
