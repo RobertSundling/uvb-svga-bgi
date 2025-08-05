@@ -1,21 +1,23 @@
+; [Comments translated from German to English]
+
 ; ******************************************************************************
 ; *                                                                            *
-; * BGI-Treiber fÅr Super-VGAs im 256-Farben Modus.                            *
+; * BGI driver for Super-VGAs in 256-color mode.                               *
 ; *                                                                            *
-; * Ullrich von Bassewitz am 29.04.1991                                        *
+; * Ullrich von Bassewitz on 29.04.1991                                        *
 ; *                                                                            *
 ; ******************************************************************************
 
 
-IDEAL                   ; Ideal-Modus
-JUMPS                   ; Automatische Sprunganpassung
-LOCALS                  ; Lokale Symbole zulassen
+IDEAL                   ; Ideal mode
+JUMPS                   ; Automatic jump adjustment
+LOCALS                  ; Allow local symbols
 SMART
 
 
 ;---------------------------------------------------
 ;
-; Verwendete Macros einbinden
+; Include used macros
 ;
 
 INCLUDE "macros.asi"
@@ -27,9 +29,8 @@ ENDIF
 
 
 ; ==================================================
-; Mit den folgenden Symbolen kann die Codeerzeugung gesteuert werden.
-; Die Symbole werden normalerweise Åber's Makefile bzw. den TASM Aufruf
-; gesetzt.
+; The following symbols can be used to control code generation.
+; The symbols are usually set via the Makefile or the TASM call.
 ;
 ; P80286          = 1
 ; P80386          = 1
@@ -42,18 +43,18 @@ ENDIF
 ENDIF
 
 
-; Bei 80386 auch 80286-Instructions verwenden
+; For 80386 also use 80286 instructions
 IF P80386
 IFNDEF P80286
 P80286  = 1
 ENDIF
 ENDIF
 
-; Prozessor setzen
+; Set processor
 RESETCPU
 
 ; ----------------------------------------
-; Verwendete Konstanten einbinden
+; Include used constants
 
 INCLUDE "const.asi"
 
@@ -72,15 +73,15 @@ ENDIF
 Start:
 
 ;---------------------------------------------------
-; Definition der verwendeten structs einbinden
+; Include definition of used structs
 ;
 
 INCLUDE "structs.asi"
 
 
 ;---------------------------------------------------
-; Der Dispatcher liegt auf Adresse 0
-; Er ist FAR codiert, sein RET dient gleichzeitig als NOP-Vektor
+; The dispatcher is located at address 0
+; It is FAR coded, its RET also serves as a NOP vector
 
 PROC    Dispatch Far
 
@@ -98,7 +99,7 @@ FAR_NOP_Vector:
 ENDP    Dispatch
 
 ;---------------------------------------------------
-; FÅllbytes auf 10h
+; Fill bytes up to 10h
 
 IF Ver3
         db      0
@@ -107,27 +108,27 @@ ELSE
 ENDIF
 
 ;---------------------------------------------------
-; Datensegment
+; Data segment
 
 IF      Ver3
 DSeg    dw      ?
 ENDIF
 
 ;---------------------------------------------------
-; Der Emulate-Vektor
-; Das abschlie·ende ret wird auch als NOP-Vektor verwendet
+; The Emulate vector
+; The final ret is also used as a NOP vector
 
 PROC    Emulate NEAR
 
-        ret                             ; Diese beiden Zeilen werden mit
-        db      00h, 00h, 00h, 00h      ; call FAR GRAPH:XXXX Åberschrieben
+        ret                             ; These two lines are overwritten with
+        db      00h, 00h, 00h, 00h      ; call FAR GRAPH:XXXX
 NOP_Vector:
-        ret                             ; Danach gehts zurÅck
+        ret                             ; Then it returns
 
 ENDP    Emulate
 
 ; ----------------------------------------------------------------
-; Allgemeine Unterprogramme
+; General subroutines
 
 
 PROC    Int10 Near
@@ -141,106 +142,105 @@ PROC    Int10 Near
 ENDP    Int10
 
 ;---------------------------------------------------------------------
-; Unterprogramme einbinden
+; Include subroutines
 
-INCLUDE "dpmi.asi"                      ; DPMI-Stuff
+INCLUDE "dpmi.asi"                      ; DPMI stuff
 
-INCLUDE "svgaopts.asi"                  ; Environment-Optionen
+INCLUDE "svgaopts.asi"                  ; Environment options
 
 INCLUDE "detect.asi"                    ; Autodetect
 
-INCLUDE "cards.asi"                     ; kartenspezifische Routinen
+INCLUDE "cards.asi"                     ; Card-specific routines
 
-INCLUDE "s3.asi"                        ; S3 spezifische Routinen
+INCLUDE "s3.asi"                        ; S3 specific routines
 
 
 ; =========================================================================
 ;
-; Install-Routine
+; Install routine
 ;
 
 
 PROC    Install NEAR
 
-        cmp     al,01h                          ; Mode Query ?
-        jnz     @@L1                            ; Nein
-        mov     cx, ModeCount                   ; Ja: Number of modes supported
+        cmp     al,01h                          ; Mode query?
+        jnz     @@L1                            ; No
+        mov     cx, ModeCount                   ; Yes: Number of modes supported
         ret
 
 @@L1:   push    ds
         pop     es
-        cmp     al, 02h                         ; Mode Name ?
-        jnz     InstallDevice                   ; Nein
-        jcxz    @@L3                            ; Modus 0
+        cmp     al, 02h                         ; Mode name?
+        jnz     InstallDevice                   ; No
+        jcxz    @@L3                            ; Mode 0
         cmp     cx, MaxAutoMode
         ja      @@L2
-        mov     bx, cx                          ; Auto-Modus-Nummer in bx
-        shl     bx, 1                           ; * 2 fÅr Wortzugriff
-        mov     bx, [WORD AutoName-2+bx]        ; Zeiger auf Namen holen
-        ret                                     ; fertig
+        mov     bx, cx                          ; Auto mode number in bx
+        shl     bx, 1                           ; * 2 for word access
+        mov     bx, [WORD AutoName-2+bx]        ; Get pointer to name
+        ret                                     ; done
 
-; Es ist kein Autodetect-Modus
+; It is not an autodetect mode
 
 @@L2:   sub     cx, MaxAutoMode
 @@L3:   fastimul bx, cx, SIZE TMode
-		;mov     ax, SIZE TMode                  ; LÑnge eines Tabelleneintrages
-        ;mul     cx                              ; * Eintragsnummer
+		;mov     ax, SIZE TMode                  ; Length of a table entry
+        ;mul     cx                              ; * entry number
         ;mov     bx, ax
-        mov     bx, [(TMode ModeTable + bx).ModeName]   ; Zeiger auf Namen
+        mov     bx, [(TMode ModeTable + bx).ModeName]   ; Pointer to name
         ret
 
-; Installieren
+; Install
 
 InstallDevice:
-        push    cx                              ; Modus retten
-        call    GetOpts                         ; Environment-Optionen holen
+        push    cx                              ; Save mode
+        call    GetOpts                         ; Get environment options
         pop     cx
         xor     ch, ch
-        cmp     cl, ModeCount                   ; Modus zulÑssig ?
-        jae     IllegalMode                     ; NEIN !
-        jcxz    @@L5                            ; Modus 0
-        cmp     cx, MaxAutoMode                 ; Ist es ein Autodetect-Modus
-        ja      @@L4                            ; Nein
+        cmp     cl, ModeCount                   ; Mode allowed?
+        jae     IllegalMode                     ; NO!
+        jcxz    @@L5                            ; Mode 0
+        cmp     cx, MaxAutoMode                 ; Is it an autodetect mode?
+        ja      @@L4                            ; No
 
-; Es ist ein Autodetect-Modus. Die Modus-Maske aus der Tabelle holen und
-; die Autodetect-Routine aufrufen. RÅckgabe ist ein Eintrag der Mode-Tabelle
+; It is an autodetect mode. Get the mode mask from the table and
+; call the autodetect routine. Return is an entry of the mode table
 ; in di
 
-        mov     di, cx                          ; Modus-Nummer in di
-        mov     al, [BYTE AutoMode-1+di]        ; Modus-BitSet holen
-        push    es                              ; es wird zerstîrt
-        call    AutoDetectMode                  ; Modus suchen
+        mov     di, cx                          ; Mode number in di
+        mov     al, [BYTE AutoMode-1+di]        ; Get mode bitset
+        push    es                              ; es is destroyed
+        call    AutoDetectMode                  ; Search for mode
         pop     es
         jmp     short @@L6
 
-; Es ist kein Autodetect-Modus der eingestellt werden soll
+; It is not an autodetect mode to be set
 
 @@L4:   sub     cx, MaxAutoMode
-@@L5:   mov     ax, SIZE TMode                  ; Grî·e eines Tabelleneintrags
+@@L5:   mov     ax, SIZE TMode                  ; Size of a table entry
         mul     cx
-        mov     di, ax                          ; Offset nach di
-        lea     di, [ModeTable + di]            ; Adresse nach di
-@@L6:   mov     [ModePtr], di                   ; Adresse merken
+        mov     di, ax                          ; Offset into di
+        lea     di, [ModeTable + di]            ; Address into di
+@@L6:   mov     [ModePtr], di                   ; Save address
 
-; Aus den Daten des Modus-Eintrags in di die Daten fÅr die DST berechnen
-; und setzen
+; From the data of the mode entry in di, calculate and set the data for DST
 
-        mov     ax, [(TMode di).XRes]           ; X-Auflîsung setzen
+        mov     ax, [(TMode di).XRes]           ; Set X resolution
         dec     ax
         mov     [DST.XRes], ax
         mov     [DST.XEfRes], ax
-        mov     ax, [(TMode di).YRes]           ; Y-Auflîsung setzen
+        mov     ax, [(TMode di).YRes]           ; Set Y resolution
         dec     ax
         mov     [DST.YRes], ax
         mov     [DST.YEfRes], ax
 
-; Aspect-Ratio nach der Formel
+; Aspect ratio according to the formula
 ;
 ;       Y * 10000     XInch
 ;      ----------- *  -----
 ;           X         YInch
 ;
-; berechnen
+; calculate
 
         mov     ax, 10000
         mul     [(TMode di).YRes]
@@ -249,15 +249,15 @@ InstallDevice:
         div     [DST.YInch]
         mov     [DST.Aspec], ax
 
-; Zeiger auf DST in es:bx zurÅckliefern, es stimmt schon
+; Return pointer to DST in es:bx, es is already correct
 
-        mov     bx, OFFSET DST                  ; als aktuelle DST vermerken
+        mov     bx, OFFSET DST                  ; Mark as current DST
         ret
 
 IllegalMode:
-        mov     di, OFFSET ModeTable            ; VGA256 rÅckliefern
-        mov     [DST.Stat], grInvalidMode       ; UngÅltiger Modus
-        jmp     @@L6                            ; und installieren
+        mov     di, OFFSET ModeTable            ; Return VGA256
+        mov     [DST.Stat], grInvalidMode       ; Invalid mode
+        jmp     @@L6                            ; and install
 
 ENDP    Install
 
@@ -295,45 +295,44 @@ ENDP    Install
 
 PROC    Init NEAR
 
-        mov     al, [es:bx]             ; Hintergrundfarbe
-        and     al, 0fh                 ; BIOS nimmt nur 0-15
-        mov     [BkColor], al           ; merken
+        mov     al, [es:bx]             ; Background color
+        and     al, 0fh                 ; BIOS only uses 0-15
+        mov     [BkColor], al           ; Save
 
-; Ist im Status-Feld der DST ein Fehler eingetragen, dann direkt Ende
-; (GRAPH nimmt's anscheinend nicht so genau mit der FehlerprÅfung, so da·
-; ein Aufruf mit gesetztem Fehler durchaus mîglich ist. In diesem Fall ist
-; Modus 0 eingeschaltet, es sieht aber trotzdem etwas bled aus, wenn in
-; einen ungewollten Grafik-Modus geschaltet wird).
+; If there is an error entered in the status field of the DST, then end
+; directly (GRAPH apparently does not take error checking too seriously,
+; so a call with an error set is quite possible. In this case, mode 0 is
+; enabled, but it still looks a bit silly if you switch to an unwanted
+; graphics mode).
 
         cmp     [DST.Stat], grOk
         jne     InitEnd
 
-; Das Grafik-Kernel beschummeln: Wie bereits im Kommentar zur Vektor-Tabelle
-; ausgefÅhrt, prÅft das Grafik-Kernel ab Version 7.0 den FillPoly-Vektor.
-; Wenn dieser nicht auf Emulate steht setzt sich das Kernel ein Flag, das
-; zur Folge hat, dass Arc und PieSlice mit kleinen Radien nicht mehr korrekt
-; arbeiten. Also steht in der Tabelle ein Zeiger auf Emulate, der hier
-; korrigiert wird.
+; Cheat the graphics kernel: As already explained in the comment on the
+; vector table, the graphics kernel from version 7.0 checks the FillPoly
+; vector. If this does not point to Emulate, the kernel sets a flag that
+; causes Arc and PieSlice with small radii to no longer work correctly.
+; So the table contains a pointer to Emulate, which is corrected here.
 
         mov     [Vector_Table + FuncFillPoly], OFFSET FillPoly
 
-; X- und Y-Auflîsung und das Clip-Fenster rÅcksetzen
+; Reset X and Y resolution and the clip window
 
         xor     ax, ax
         mov     [Clip_X1], ax
         mov     [Clip_Y1], ax
 
-        mov     ax, [DST.XEfRes]                ; Effektive X-Res
+        mov     ax, [DST.XEfRes]                ; Effective X resolution
         mov     [Clip_X2], ax
         inc     ax
         mov     [MaxX], ax
         mov     [BytesPerLine], ax
-        mov     ax, [DST.YEfRes]                ; Effektive Y-Res
+        mov     ax, [DST.YEfRes]                ; Effective Y resolution
         mov     [Clip_Y2], ax
         inc     ax
         mov     [MaxY], ax
 
-; Die fÅr den Modus passende Segment-Umschaltroutine setzen
+; Set the segment switching routine suitable for the mode
 
         mov     di, [ModePtr]
         mov     bl, [(TMode di).CardType]
@@ -342,7 +341,7 @@ PROC    Init NEAR
         mov     ax, [SegSwitchTable+bx]
         mov     [SegSelect], ax
 
-; Den Zeiger auf die VESA-Umschaltroutine zurÅcksetzen
+; Reset the pointer to the VESA switching routine
 
 IF P80386
         xor     eax, eax
@@ -353,19 +352,18 @@ ELSE
         mov     [WORD HIGH VESA_WinFunc], ax
 ENDIF
 
-; Modus einstellen. Hier mÅssen bei gesetzter Option M die VESA-Funktions-
-; nummern verwendet werden
+; Set mode. Here, if option M is set, the VESA function numbers must be used
 
         test    [Options], OpUseVesaModes
         jnz     @@L2
 
-; Normale Umschaltung
+; Normal switching
 
 @@L1:   mov     ax, [(TMode di).BIOSax]
         mov     bx, [(TMode di).BIOSbx]
         jmp     @@L4
 
-; Umschaltung mit VESA-Modusnummern
+; Switching with VESA mode numbers
 
 @@L2:   cmp     [(TMode di).Capabilities], M320x200
         mov     ax, 0013h
@@ -387,23 +385,23 @@ ENDIF
         cmp     al, M1280x1024
         jnz     @@L1
 @@L3:   mov     ax, 4F02h
-@@L4:   push    di                              ; Zeiger retten
+@@L4:   push    di                              ; Save pointer
         call    Int10
-        pop     di                              ; Zeiger auf Modus-Eintrag
+        pop     di                              ; Pointer to mode entry
 
-; Jetzt noch eine evtl. vorhandene spezielle Routinen aufrufen
+; Now call any special routines if present
 
         call    [(TMode di).GraphOn]
 
-; Screen-Paragraphs rechnen und setzen. Das darf erst jetzt geschehen, weil
-; die kartenspezifische Routine evtl. BytesPerLine umsetzt.
+; Calculate and set screen paragraphs. This must only happen now, because
+; the card-specific routine may change BytesPerLine.
 
         mov     ax, [MaxY]
         mul     [BytesPerLine]
         mov     [Word Low ScreenBytes], ax
         mov     [Word High ScreenBytes], dx
 
-; Hintergrundfarbe als Paletteneintrag 0 setzen
+; Set background color as palette entry 0
 
 		IF P80386        
 			movzx     bx, [BkColor]
@@ -411,10 +409,10 @@ ENDIF
 	        mov     bl, [BkColor]
 	        xor     bh, bh
 		ENDIF
-        mov     ax, 0C000h              ; Code fÅr: Setze Hintergrund
+        mov     ax, 0C000h              ; Code for: Set background
         call    Palette                 ; "Palette"
 
-; das war's bereits
+; that's it
 
 InitEnd:
         ret
@@ -423,18 +421,18 @@ ENDP    Init
 
 ; ======================================================================
 ;
-; CLEAR: Lîscht den Grafik-Bildschirm
+; CLEAR: Clears the graphics screen
 ;
 
 PROC    Clear   NEAR
 
-        call    [GE_Ready]              ; Auf die GE warten
+        call    [GE_Ready]              ; Wait for the GE
         mov     es, [VideoSeg]
         mov     ax, [PageOfs]
-        mul     [MaxX]                  ; Startadresse des Bildschirms rechnen
+        mul     [MaxX]                  ; Calculate start address of screen
         mov     di, ax                  ; Offset in di
-        mov     [Seg64], dl             ; Segment setzen
-        call    [SegSelect]             ; Segment einstellen
+        mov     [Seg64], dl             ; Set segment
+        call    [SegSelect]             ; Set segment
         cld
 
 IF      P80386
@@ -446,15 +444,15 @@ ENDIF
         mov     dx, [WORD HIGH ScreenBytes]
         jcxz    @@L5
         mov     bx, di
-        add     bx, cx                  ; SegmentÅberlauf?
-        jnc     @@L4                    ; Springe wenn Nein
-        jmp     @@L1                    ; Springe wenn SegmentÅberlauf
+        add     bx, cx                  ; Segment overflow?
+        jnc     @@L4                    ; Jump if no
+        jmp     @@L1                    ; Jump if segment overflow
 
 IF      P80386
 
-@@L0:   mov     bx, di                  ; Rest nach SegmentÅberlauf
+@@L0:   mov     bx, di                  ; Rest after segment overflow
 @@L1:   mov     cx, di
-        neg     cx                      ; Rest bis SegmentÅberlauf
+        neg     cx                      ; Rest until segment overflow
         jnz     @@L2
         mov     ecx, 4000h
         rep     stosd
@@ -477,19 +475,19 @@ IF      P80386
 
 ELSE
 
-@@L0:   mov     bx, di                  ; Rest nach SegmentÅberlauf
+@@L0:   mov     bx, di                  ; Rest after segment overflow
 @@L1:   mov     cx, di
-        neg     cx                      ; Rest bis SegmentÅberlauf
+        neg     cx                      ; Rest until segment overflow
         jnz     @@L2
         mov     cx, 8000h
         jmp     @@L3
 
-@@L2:   shr     cx, 1                   ; Anzahl ist immer gerade
+@@L2:   shr     cx, 1                   ; Count is always even
 @@L3:   rep     stosw
         inc     [Seg64]
         call    [SegSelect]
         mov     cx, bx
-@@L4:   shr     cx, 1                   ; Anzahl ist immer gerade
+@@L4:   shr     cx, 1                   ; Count is always even
         rep     stosw
 @@L5:   dec     dx
         jns     @@L0
@@ -502,33 +500,33 @@ ENDP    Clear
 
 ; =========================================================================
 ;
-; Post-Routine
+; Post routine
 ;
 
 PROC    Post    NEAR
 
-; Wenn der Treiber im Protected-Mode lÑuft und die VESA-Segmentumschaltung
-; auch im Protected-Mode aufgerufen wurde, dann ist ein Deskriptor dafÅr
-; alloziert worden. Diesen freigeben.
+; If the driver is running in protected mode and the VESA segment switching
+; was also called in protected mode, then a descriptor was allocated for it.
+; Free this.
 
         mov     bx, [WORD HIGH VESA_WinFunc]
-        test    bx, bx                          ; Belegt ?
-        jz      @@L1                            ; Springe wenn Nein
+        test    bx, bx                          ; Allocated?
+        jz      @@L1                            ; Jump if no
 
-        call    DPMI_FreeDesc                   ; Deskriptor freigeben
+        call    DPMI_FreeDesc                   ; Free descriptor
 
-; Den Emulate-Vektor wieder rÅcksetzen: Wie bereits im Kommentar zur
-; Vektor-Tabelle ausgefÅhrt, prÅft das Grafik-Kernel ab Version 7.0 den
-; FillPoly-Vektor.
-; Wenn dieser nicht auf Emulate steht setzt sich das Kernel ein Flag, das
-; zur Folge hat, dass Arc und PieSlice mit kleinen Radien nicht mehr korrekt
-; arbeiten. Der Vektor in der Tabelle wird also zur Laufzeit (bei Init) erst
-; richtig gesetzt. Damit dies auch bei als OBJ-File eingebundenen Treibern
-; korrekt tut, muss er hier wieder rÅckgesetzt werden.
+; Reset the Emulate vector: As already explained in the comment on the
+; vector table, the graphics kernel from version 7.0 checks the FillPoly
+; vector.
+; If this does not point to Emulate, the kernel sets a flag that causes
+; Arc and PieSlice with small radii to no longer work correctly. The vector
+; in the table is therefore only set correctly at runtime (during Init).
+; To ensure this also works correctly for drivers linked as OBJ files,
+; it must be reset here.
 
 @@L1:   mov     [Vector_Table + FuncFillPoly], OFFSET Emulate
 
-; Und Ende...
+; And done...
 
         ret
 
@@ -537,7 +535,7 @@ ENDP    Post
 
 
 ; =======================================================================
-; Farbe setzen, al = Zeichenfarbe, ah = FÅllfarbe
+; Set color, al = character color, ah = fill color
 ;
 
 PROC    Color Near
@@ -549,7 +547,7 @@ PROC    Color Near
 ENDP    Color
 
 ; ======================================================================
-; Pixel-Cursor bewegen
+; Move pixel-cursor
 ;
 
 PROC    Move    Near
@@ -562,7 +560,7 @@ ENDP    Move
 
 ; ======================================================================
 ;
-; Routinen Vect und Draw einbinden
+; Include routines Vect and Draw
 ;
 
 INCLUDE "line.asi"
@@ -572,21 +570,21 @@ INCLUDE "line.asi"
 ;
 ;       FillPoly
 ;
-; Wird aufgerufen mit:
-;       es:bx   Zeiger auf Punkteliste, wobei Teilpolygone mit Punktepaaren
-;               $8001/$8001 abgeschlossen werden und das gesamte Polygon
-;               nochmals mit $8000/$8000
-;               es:bx ist gleichzeitig der Zeiger auf den von GRAPH
-;               reservierten Speicherbereich (GraphBuf oder so), der auch fÅr
-;               FloodFill benutzt wird. Am Ende der Liste ist daher Platz fÅr
-;               eigene Variablen wenn auch nicht klar ist wieviel (im Normal-
-;               fall aber 4KB, was bei dem verwendeten Verfahren mehr als genug
-;               ist).
-;       ax      Anzahl der Punkte, wobei die Trenn- und Abschlu·punkte
-;               mitgezÑhlt werden.
+; Called with:
+;       es:bx   Pointer to point list, where sub-polygons are terminated
+;               with point pairs $8001/$8001 and the entire polygon again
+;               with $8000/$8000
+;               es:bx is also the pointer to the memory area reserved by
+;               GRAPH (GraphBuf or similar), which is also used for
+;               FloodFill. At the end of the list there is therefore space
+;               for own variables, although it is not clear how much (in
+;               the normal case, however, 4KB, which is more than enough
+;               for the method used).
+;       ax      Number of points, where the separator and end points are
+;               counted as well.
 ;
-; Die Åbergebene Liste ist geschlossen, d.h. erster und letzter Punkt eines
-; Teilpolygons sind gleich.
+; The passed list is closed, i.e. the first and last point of a subpolygon
+; are the same.
 ;
 
 
@@ -596,227 +594,227 @@ LOCAL   Y: WORD, YMax: WORD, Count: WORD, VertexList: DWORD, \
 
         EnterProc       LocalSize
 
-; Variablen speichern bzw. initialisieren
+; Save or initialize variables
 
-        and     ax, 7FFFh               ; BP 7.0 (High Bit ist Flag fÅr was ?)
-        mov     [Count], ax             ; Anzahl Punkte merken
-        mov     [Seg64], -1             ; Kein Segment eingestellt
+        and     ax, 7FFFh               ; BP 7.0 (High bit is flag for what?)
+        mov     [Count], ax             ; Remember number of points
+        mov     [Seg64], -1             ; No segment set
 
-; Den maximalen und den minimalen Y-Wert aus der Liste raussuchen.
-; Die von Graph eingefÅgten Trenn- und Abschlu·punkte werden nicht benîtigt,
-; sie werden beim Durchsuchen der Liste gelîscht.
-; Die Liste wird ohne diese Punkte hinter die vorige Liste kopiert. Der
-; Zeiger VertexList zeigt auf diese neue Liste. Am Ende dieser neuen Liste
-; wird die Linien-Liste angelegt.
+; Find the maximum and minimum Y value from the list.
+; The separator and end points inserted by Graph are not needed,
+; they are deleted when searching the list.
+; The list is copied without these points behind the previous list. The
+; pointer VertexList points to this new list. At the end of this new list,
+; the line list is created.
 
 
         push    es
         pop     ds
         mov     si, bx                  ; ds:si = VertexList
         mov     di, bx                  ; es:di = VertexList
-        mov     cx, ax                  ; cx = Anzahl Punkte
+        mov     cx, ax                  ; cx = number of points
 IF P80286
         shl     ax, 2
 ELSE
         shl     ax, 1
-        shl     ax, 1                   ; Anzahl * 4
+        shl     ax, 1                   ; number * 4
 ENDIF
-        add     di, ax                  ; es:di zeigt hinter VertexList
+        add     di, ax                  ; es:di points behind VertexList
         mov     [WORD LOW VertexList], di
         mov     [WORD HIGH VertexList], es
         cld
 
-        mov     bx, [WORD ds:si+2]      ; ersten Y-Wert als YMax...
-        mov     dx, bx                  ; ...und als YMin nehmen
+        mov     bx, [WORD ds:si+2]      ; first Y value as YMax...
+        mov     dx, bx                  ; ...and as YMin
 
 Even
-@@L0:   lodsw                           ; X-Wert holen
-        cmp     ah, 080h                ; Trenn- oder Abschlu·punkt ?
-        jz      @@L3                    ; Springe wenn Ja
+@@L0:   lodsw                           ; Get X value
+        cmp     ah, 080h                ; Separator or end point?
+        jz      @@L3                    ; Jump if yes
 
-; Der Punkt ist gÅltig, prÅfen ob er als Maximum oder Minimum in Frage kommt.
+; The point is valid, check if it is a new maximum or minimum.
 
-        stosw                           ; X-Wert speichern
-        ;movsw							; Y-Wert holen / Y-Wert speichern
-        lodsw                           ; Y-Wert holen
-        stosw                           ; Y-Wert speichern
-        cmp     ax, bx                  ; Y-Wert > YMax ?
-        jl      @@L1                    ; Springe wenn Nein
-        xchg    ax, bx                  ; öbernehme wenn ja
-        LOOPCX  @@L0                    ; Wert > Max kann nicht < Min sein
+        stosw                           ; Store X value
+        ;movsw							; Get Y value / store Y value
+        lodsw                           ; Get Y value
+        stosw                           ; Store Y value
+        cmp     ax, bx                  ; Y value > YMax?
+        jl      @@L1                    ; Jump if not
+        xchg    ax, bx                  ; Take over if yes
+        LOOPCX  @@L0                    ; Value > Max can't be < Min
         jmp     @@C1
 
-@@L1:   cmp     ax, dx                  ; Y-Wert < YMin ?
-        jg      @@L2                    ; Springe wenn Nein
-        xchg    ax, dx                  ; öbernehme wenn ja
-@@L2:   LOOPCX  @@L0                    ; NÑchster Punkt
+@@L1:   cmp     ax, dx                  ; Y value < YMin?
+        jg      @@L2                    ; Jump if not
+        xchg    ax, dx                  ; Take over if yes
+@@L2:   LOOPCX  @@L0                    ; Next point
         jmp     @@C1
 
-; Der Punkt ist ungÅltig und wird beim Kopieren Åbersprungen
+; The point is invalid and is skipped when copying
 
 @@L3:   
-		add2    si						; Y-Wert ignorieren
-        dec     [Count]                 ; Ein Punkt weniger
-        jmp     @@L0                    ; und nÑchster Punkt
+		add2    si						; Ignore Y value
+        dec     [Count]                 ; One point less
+        jmp     @@L0                    ; and next point
 
-; Alle Trenn- und Abschlu·punkte sind jetzt gelîscht, in bx befindet sich
-; der grî·te und in dx der kleinste Y-Wert des Polygons. Die Anzahl der
-; Punkte in Count entspricht der wirklichen Anzahl.
-; Maximum und Minimum werden gespeichert und es wird ein Zeiger auf das
-; Ende der Polygon-Liste berechnet, der Platz dahinter dient spÑter zur
-; Speicherung der Linienliste.
+; All separator and end points are now deleted, bx contains
+; the largest and dx the smallest Y value of the polygon. The number of
+; points in Count corresponds to the actual number.
+; Maximum and minimum are saved and a pointer to the
+; end of the polygon list is calculated, the space behind it is later used
+; for storing the line list.
 
 @@C1:   mov     [WORD LOW LineList], di
         mov     [WORD HIGH LineList], es
 
-        SetToDS ds                      ; Datensegment neu laden
+        SetToDS ds                      ; Reload data segment
         mov     ax, [Clip_Y2]
-        cmp     bx, ax                  ; YMax clippen
+        cmp     bx, ax                  ; Clip YMax
         jle     @@C2
         xchg    ax, bx
 @@C2:   mov     [YMax], bx
 
         mov     ax, [Clip_Y1]
-        cmp     dx, ax                  ; YMin clippen
+        cmp     dx, ax                  ; Clip YMin
         jge     @@C3
         xchg    ax, dx
 @@C3:
 
-; FÅr alle Y-Werte des Polygons werden jetzt die Start- und Endpunkte
-; horizontaler Linien festgelegt, mit denen spÑter das Polygon gefÅllt wird.
-; Die X-Werte werden dabei vorerst unsortiert in der Linienliste abgelegt
-; und erst spÑter aufsteigend sortiert.
+; For all Y values of the polygon, the start and end points of
+; horizontal lines are now determined, with which the polygon will later
+; be filled. The X values are initially stored unsorted in the line list
+; and only sorted in ascending order later.
 
-        mov     [Y], dx                 ; Y mit minimalem Wert initialisieren
+        mov     [Y], dx                 ; Initialize Y with minimum value
 
-; Schleifenbeginn
+; Start of loop
 
 Even
 @@L4:   mov     ax, [Y]
         cmp     ax, [YMax]
-        jg      @@L30                   ; Ende erreicht
+        jg      @@L30                   ; End reached
 
-        mov     [LineCount], 0          ; Keine X-Linienpunkte vorhanden
-        les     di, [LineList]          ; Zeiger auf Liste laden
-        lds     si, [VertexList]        ; Zeiger auf Polygonliste
-        mov     cx, [Count]             ; Anzahl Polygonpunkte
-        dec     cx                      ; Eine Linie weniger als Punkte
+        mov     [LineCount], 0          ; No X line points present
+        les     di, [LineList]          ; Load pointer to list
+        lds     si, [VertexList]        ; Load pointer to polygon list
+        mov     cx, [Count]             ; Number of polygon points
+        dec     cx                      ; One line less than points
 
-; Feststellen ob die adressierte Linie den aktuellen Y-Wert schneidet
+; Determine if the addressed line intersects the current Y value
 
 Even
-@@L5:   mov     ax, [Y]                 ; Aktueller Y-Wert
-        mov     bx, [WORD ds:si+2]      ; Y-Wert 1
-        mov     dx, [WORD ds:si+6]      ; Y-Wert 2
+@@L5:   mov     ax, [Y]                 ; Current Y value
+        mov     bx, [WORD ds:si+2]      ; Y value 1
+        mov     dx, [WORD ds:si+6]      ; Y value 2
         cmp     bx, dx                  ; bx < dx ?
-        jle     @@L6                    ; Springe wenn ja
+        jle     @@L6                    ; Jump if yes
 
         cmp     ax, dx                  ; ax >= dx ?
-        jl      @@L9                    ; Nein, kein Schnittpunkt
+        jl      @@L9                    ; No, no intersection
         cmp     ax, bx                  ; ax < bx ?
-        jge     @@L9                    ; Nein, kein Schnittpunkt
+        jge     @@L9                    ; No, no intersection
         jmp     @@C10
 
 @@L6:   cmp     ax, bx                  ; ax >= bx ?
-        jl      @@L9                    ; Nein, kein Schnittpunkt
+        jl      @@L9                    ; No, no intersection
         cmp     ax, dx                  ; ax < dx ?
-        jge     @@L9                    ; Nein, kein Schnittpunkt
+        jge     @@L9                    ; No, no intersection
 
-; Die Linie besitzt geht durch die momentane Y-Koordinate. Den X-Wert
-; berechnen, an dem dies stattfindet.
+; The line passes through the current Y coordinate. Calculate the X value
+; where this happens.
 
 Even
-@@C10:  sub     bx, dx                  ; Y-Wert1 - Y-Wert2
+@@C10:  sub     bx, dx                  ; Y value1 - Y value2
         jnz     @@L7
 
-; Die Steigung der Begrenzungslinie des Polygons ist 0 ! FÅr die spÑtere
-; Linie mÅssen also beide X-Koordinaten gespeichert werden. Es gibt also
-; hier keinen einfachen Schnittpunkt, sondern eine ganze Linie. Deren
-; Endkoordinaten werden festgehalten.
+; The slope of the polygon boundary line is 0! For the later
+; line, both X coordinates must be stored. So there is
+; no simple intersection here, but a whole line. Its
+; end coordinates are recorded.
 
-        mov     ax, [WORD ds:si]        ; X-Wert 1
-        stosw                           ; in Linienliste merken
-        inc     [LineCount]             ; Anzahl der Punkte erhîhen
-        mov     ax, [WORD ds:si+4]      ; X-Wert 2
-        jmp     @@L8                    ; speichern und nÑchste Linie
+        mov     ax, [WORD ds:si]        ; X value 1
+        stosw                           ; Remember in line list
+        inc     [LineCount]             ; Increase number of points
+        mov     ax, [WORD ds:si+4]      ; X value 2
+        jmp     @@L8                    ; store and next line
 
-; Die Linie hat eine echte Steigung, den X-Wert des Schnittpunktes berechnen.
+; The line has a real slope, calculate the X value of the intersection.
 
-@@L7:   mov     ax, [WORD ds:si]        ; X-Wert 1
-        sub     ax, [WORD ds:si+4]      ; - X-Wert 2
-        mov     dx, [Y]                 ; Aktuelles Y
-        sub     dx, [WORD ds:si+2]      ; - Start-Y
+@@L7:   mov     ax, [WORD ds:si]        ; X value 1
+        sub     ax, [WORD ds:si+4]      ; - X value 2
+        mov     dx, [Y]                 ; Current Y
+        sub     dx, [WORD ds:si+2]      ; - Start Y
         imul    dx                      ;
         idiv    bx                      ;
-        add     ax, [WORD ds:si]        ; X-Wert in ax
+        add     ax, [WORD ds:si]        ; X value in ax
 
-; Errechneten X-Wert speichern und Anzahl der Werte erhîhen
+; Store calculated X value and increase number of values
 
-@@L8:   stosw                           ; X-Wert speichern
+@@L8:   stosw                           ; Store X value
         inc     [LineCount]
 
-; NÑchste Linie adressieren
+; Address next line
 
-@@L9:   add     si, 4                   ; NÑchster Polygonpunkt
+@@L9:   add     si, 4                   ; Next polygon point
         LOOPCX  @@L5
 
-; In der Linienliste befindet sich jetzt eine ungeordnete Folge von
-; X-Werten. Diese mÅssen aufsteigend sortiert werden.
-; es und ds zeigen noch auf dasselbe Segment, das von VertexList bzw.
-; LineList und mÅssen deshalb nicht neu geladen werden.
-; Ausserdem kann die Tatsache ausgenutzt werden, da· es=ds.
+; The line list now contains an unsorted sequence of
+; X values. These must be sorted in ascending order.
+; es and ds still point to the same segment, which is used by VertexList
+; and LineList and therefore do not need to be reloaded.
+; In addition, the fact that es=ds can be used.
 
-        mov     si, [WORD LOW LineList] ; Offset von LineList laden
-        mov     cx, [LineCount]         ; ZÑhler
-        jcxz    @@L20                   ; Es gibt keine Punkte !
+        mov     si, [WORD LOW LineList] ; Load offset of LineList
+        mov     cx, [LineCount]         ; Counter
+        jcxz    @@L20                   ; There are no points!
         dec     cx                      ;
 
 Even
-@@L10:  lodsw                           ; Ersten Wert holen
-        mov     dx, cx                  ; Anzahl restliche Werte
+@@L10:  lodsw                           ; Get first value
+        mov     dx, cx                  ; Number of remaining values
         mov     di, si
 
 Even
-@@L11:  scasw                           ; ax > aktueller Wert ?
-        jle     @@L12                   ; Springe wenn Nein
-        xchg    ax, [WORD di-2]         ; Tauschen
+@@L11:  scasw                           ; ax > current value?
+        jle     @@L12                   ; Jump if not
+        xchg    ax, [WORD di-2]         ; Swap
 @@L12:  dec     dx
         jnz     @@L11
 
-        mov     [WORD ds:si-2], ax      ; Kleinsten Wert rÅckspeichern
-        LOOPCX  @@L10                   ; NÑchster X-Wert
+        mov     [WORD ds:si-2], ax      ; Store smallest value back
+        LOOPCX  @@L10                   ; Next X value
 
-; Die Linienliste ist jetzt aufsteigend sortiert. FÅr jeweils zwei
-; Punkte daraus wird ein horizontale Linie ausgegeben. Dazu mu·
-; zuerst das ds-Register wieder restauriert werden, da ein Zugriff
-; auf das Datensegment ab hier notwendig ist.
-; Zum Zeichnen der Linien wird der HorLine-Vektor verwendet.
-; Die Linie mu· noch in X-Richtung geclippt werden.
+; The line list is now sorted in ascending order. For every two
+; points from it, a horizontal line is output. For this,
+; the ds register must be restored, as access
+; to the data segment is necessary from here.
+; The HorLine vector is used to draw the lines.
+; The line must still be clipped in the X direction.
 
 
-        SetToDS ds                      ; Datensegment laden
-        mov     es, [VideoSeg]          ; und Videosegment nach es ...
-        call    [GE_Ready]              ; Warten bis GE fertig
-        call    [HorLineInit]           ; Initialisierung fÅr HorLine durchfÅhren
+        SetToDS ds                      ; Load data segment
+        mov     es, [VideoSeg]          ; and video segment to es ...
+        call    [GE_Ready]              ; Wait until GE is ready
+        call    [HorLineInit]           ; Perform initialization for HorLine
         mov     si, [WORD LOW LineList]
 @@L15:  mov     ds, [WORD HIGH LineList]
-        lodsw                           ; Erster X-Wert
+        lodsw                           ; First X value
         xchg    ax, bx
-        lodsw                           ; Zweiter X-Wert
+        lodsw                           ; Second X value
         xchg    ax, cx
 
-        SetToDS ds                      ; Datensegment neu laden
+        SetToDS ds                      ; Reload data segment
 
         mov     ax, [Clip_X1]
         mov     dx, [Clip_X2]
-        cmp     bx, dx                  ; Linie rechts au·erhalb ?
-        jg      @@L18                   ; Keine Linie wenn ja
-        cmp     bx, ax                  ; X1 clippen
+        cmp     bx, dx                  ; Line completely to the right?
+        jg      @@L18                   ; No line if yes
+        cmp     bx, ax                  ; Clip X1
         jg      @@L16
         mov     bx, ax
-@@L16:  cmp     cx, ax                  ; Linie links au·erhalb ?
-        jl      @@L18                   ; Keine Linie wenn ja
-        cmp     cx, dx                  ; X2 clippen
+@@L16:  cmp     cx, ax                  ; Line completely to the left?
+        jl      @@L18                   ; No line if yes
+        cmp     cx, dx                  ; Clip X2
         jl      @@L17
         mov     cx, dx
 @@L17:
@@ -824,15 +822,15 @@ Even
         push    si
         call    [HorLine]
         pop     si
-@@L18:  sub     [LineCount], 2          ; Zwei Punkte verwendet
-        ja      @@L15                   ; Weiter wenn noch welche da
+@@L18:  sub     [LineCount], 2          ; Two points used
+        ja      @@L15                   ; Continue if more are there
 
-; Weiter mit dem nÑchsten Y-Wert
+; Continue with the next Y value
 
 @@L20:  inc     [Y]
-        jmp     @@L4                    ; NÑchster Y-Wert
+        jmp     @@L4                    ; Next Y value
 
-; Ende. Datensegment mu· nicht restauriert werden.
+; End. Data segment does not need to be restored.
 
 @@L30:  LeaveProc
         ret
@@ -855,14 +853,14 @@ ENDP    FillPoly
 
 PROC    FillStyle Near
 
-        cmp     al,0FFh                 ; User defined ?
-        jnz     @@L2                    ; Nein
+        cmp     al,0FFh                 ; User defined?
+        jnz     @@L2                    ; No
 
-; Das User-Pattern wird an den letzten Tabellenplatz kopiert und kriegt
-; dann die Nummer 12
+; The user pattern is copied to the last table entry and then gets
+; the number 12
 
-        mov     cx, 8                   ; 8 Bytes
-        mov     di, OFFSET UserPattern  ; usw...
+        mov     cx, 8                   ; 8 bytes
+        mov     di, OFFSET UserPattern  ; etc...
 @@L1:   mov     al, [es:bx]
         mov     [di],al
         inc     di
@@ -870,12 +868,12 @@ PROC    FillStyle Near
         loop    @@L1
         mov     al, 12                  ; User-defined
 
-; Hier geht's bei allen Patterns weiter
+; Here it continues for all patterns
 
 @@L2:   mov     [FillPatternNum], al
 
-; Jetzt das Pattern zum schnelleren Zugriff noch kopieren
-; cld wurde bereits vom Dispatcher gesetzt
+; Now copy the pattern for faster access
+; cld was already set by the dispatcher
 
         cbw                             ; ah = 0
 IF P80286
@@ -885,7 +883,7 @@ ELSE
 		shl     ax, 1
         shl     ax, 1                  ; * 8
 ENDIF
-        xchg    si, ax                  ; xchg statt mov
+        xchg    si, ax                  ; xchg instead of mov
         add     si, OFFSET FillPatternTable
         mov     di, OFFSET FillPattern
         push    ds
@@ -899,14 +897,14 @@ ELSE
         movsw
         movsw
 ENDIF
-; Und Ende
+; And done
 
         ret
 
 ENDP    FillStyle
 
 ; ==========================================================================
-; Textausgabe
+; Text output
 ;
 ;         DW      TEXT            ; Hardware text output at (CP)
 ;
@@ -921,11 +919,11 @@ ENDP    FillStyle
 ;
 
 ;---------------------------------------------------
-; Unterprogramm fÅr Text-Ausgabe
+; Subroutine for text output
 ; Input
-;  di = Zeichen
+;  di = character
 ; RETURN
-;   Pixel-Darstellung im Puffer CharShape
+;   Pixel representation in buffer CharShape
 ;
 
 PROC    GetCharShape    Near
@@ -938,61 +936,61 @@ IF P80286
 ELSE
         shl     di, 1
         shl     di, 1
-        shl     di, 1                   ; * 8 fÅr Index bei 8x8 Zeichensatz
+        shl     di, 1                   ; * 8 for index in 8x8 font
 ENDIF
         cmp     di, 128 * 8             ; Code >= 128 ?
-        jb      ROMCh                   ; Nein
+        jb      ROMCh                   ; No
 
-; Zeiger es:di von 0000h:0007Ch holen (RAM-Zeichensatz fÅr Zeichen ab 80h)
+; Get pointer es:di from 0000h:0007Ch (RAM font for chars >= 80h)
 
 IF      Ver3
-        les     bx, [Int1F]             ; Vektor 1F holen
+        les     bx, [Int1F]             ; Get vector 1F
 ELSE
         xor     bx, bx
         mov     es, bx
         les     bx, [DWORD es:07Ch]
 ENDIF
         mov     ax, es
-        or      ax, bx                  ; Vektor = NIL ?
-        jz      NoChar                  ; JA: Zeichensatz existiert nicht
-        lea     di, [es:di+bx-400h]     ; Offset des Zeichens nach di
-        jmp     CharOK                  ; es:di --> Zeichen
+        or      ax, bx                  ; Vector = NIL ?
+        jz      NoChar                  ; YES: Font does not exist
+        lea     di, [es:di+bx-400h]     ; Offset of char to di
+        jmp     CharOK                  ; es:di --> char
 
-; Hier Einsprung wenn Zeichen >= 128 aber kein RAM-Zeichensatz geladen
+; Here entry if char >= 128 but no RAM font loaded
 
-NoChar: mov     di, ' ' * 8             ; Leerzeichen aus ROM nehmen
+NoChar: mov     di, ' ' * 8             ; Use space from ROM
 
-; es ist nur ein Zeichen < 128 oder es existiert kein RAM-Zeichensatz
-; Der ROM-Zeichensatz liegt bei 0F000h:0FA6Eh
+; Only a char < 128 or no RAM font exists
+; The ROM font is at 0F000h:0FA6Eh
 
 ROMCh:  lea     di, [di+ 0FA6Eh]
-        mov     es, [SegF000]           ; es:di = 0F000h:0FA6Eh + Zeichenoffset
+        mov     es, [SegF000]           ; es:di = 0F000h:0FA6Eh + char offset
 
-; Falls der Font um 90¯ gedreht werden mu· --> ab dafÅr
-; Beim Einsprung zeigt es:di auf die Pixel-Darstellung des Zeichens
-; Zuerst das Zeichen nach ax-dx holen
+; If the font must be rotated by 90¬∞ --> from here
+; On entry, es:di points to the pixel representation of the char
+; First, load the char into ax-dx
 
-CharOK: mov     ax,[es:di+00h]                  ; Byte 1 und 2
+CharOK: mov     ax,[es:di+00h]                  ; Byte 1 and 2
         mov     bx,[es:di+02h]                  ; etc.
         mov     cx,[es:di+04h]
         mov     dx,[es:di+06h]
-        SetToDS es                              ; es = Datensegment
-        mov     di, Offset CharShape            ; Dahin soll das Zeichen
-        cmp     [TextOrient], 00                ; waagrechter Text ?
-        jnz     Rotate                          ; Nein, mu· gedreht werden
+        SetToDS es                              ; es = data segment
+        mov     di, Offset CharShape            ; That's where the char goes
+        cmp     [TextOrient], 00                ; horizontal text?
+        jnz     Rotate                          ; No, must be rotated
 
-; Wir mÅssen das Zeichen nur noch speichern
+; We only need to store the char
 
-        stosw                                   ; 1. + 2. Byte
+        stosw                                   ; 1st + 2nd byte
         mov     ax, bx
-        stosw                                   ; 2. + 3. ...
+        stosw                                   ; 2nd + 3rd ...
         mov     ax, cx
         stosw
         mov     ax, dx
         stosw
         jmp     GetCharEnd
 
-; Das Zeichen mu· gedreht werden
+; The char must be rotated
 
 Rotate: mov     bp,0008h
 RotLp:  shr     al,1
@@ -1017,7 +1015,7 @@ RotLp:  shr     al,1
         dec     bp
         jnz     RotLp
 
-; Ende, das Zeichen befindet sich im Puffer CharShape
+; Done, the char is in the buffer CharShape
 
 GetCharEnd:
         pop     bp
@@ -1025,10 +1023,12 @@ GetCharEnd:
 
 ENDP    GetCharShape
 
+
+
 ;---------------------------------------------------
-; Zeichenausgabe Hardware-Text
+; Character output hardware text
 ;
-; Zeichen ist in al, bx = X, cx = Y
+; Character is in al, bx = X, cx = Y
 ;
 
 PROC    OutChar Near
@@ -1037,7 +1037,7 @@ Local   YMult: Word, Diff: Word = LocalSize
 
         EnterProc  LocalSize
 
-; Zuerst Zeichenposition gegen Clip-Fenster prÅfen
+; First check character position against clip window
 
         cmp     bx, [Clip_X1]
         jb      OutCharEnd
@@ -1055,95 +1055,95 @@ Local   YMult: Word, Diff: Word = LocalSize
         cmp     cx, di
         ja      OutCharEnd
 
-; Adresse des ersten Punktes rechnen
+; Calculate address of first point
 
         xor     ah, ah
-        mov     di, ax                  ; Zeichen in di
+        mov     di, ax                  ; Character in di
         mov     ax, cx                  ; ax = Y
-        add     ax, [PageOfs]           ; Korrektur fÅr aktuelle Bildschirmseite
+        add     ax, [PageOfs]           ; Correction for current screen page
         mul     [MaxX]
         add     ax, bx                  ; + X
         adc     dl, 0
-        mov     [Seg64], dl             ; Segment merken
-        call    [SegSelect]             ; Segment einstellen
-        push    ax                      ; Offset merken
+        mov     [Seg64], dl             ; Remember segment
+        call    [SegSelect]             ; Set segment
+        push    ax                      ; Remember offset
 
-; Berechnen, wieviel am Ende einer Zeile (X2) dazugezÑhlt werden mu· um bei
-; (X1/Y+1) zu landen
+; Calculate how much must be added at the end of a line (X2) to get to
+; (X1/Y+1)
 
-        mov     ax, [MaxX]              ; ZeilenlÑnge in Pixeln
-        sub     ax, [TextSizeX]         ; - Zeichengrî·e in Pixeln
-        mov     [Diff], ax              ; und speichern
+        mov     ax, [MaxX]              ; Line length in pixels
+        sub     ax, [TextSizeX]         ; - character size in pixels
+        mov     [Diff], ax              ; and store
 
-; Die Pixel-Darstellung des Zeichens in den Puffer laden (di = Zeichen)
+; Load the pixel representation of the char into the buffer (di = char)
 
-        call    GetCharShape            ; Pixel-Darstellung --> CharShape
+        call    GetCharShape            ; Pixel representation --> CharShape
 
-; Variable laden
+; Load variable
 
-        mov     si, Offset CharShape    ; Dort steht das Zeichen
+        mov     si, Offset CharShape    ; There is the char
         mov     al, [DrawingColor]
         mov     es, [VideoSeg]
-        mov     bx, [TextMultX]         ; Ins Register fÅr Speed
+        mov     bx, [TextMultX]         ; Into register for speed
         pop     di                      ; Offset
 
-; Y-Schleife
+; Y loop
 
 @@OC2:  mov     ah, [si]                ; Pixel in ah
         mov     dx, [TextMultY]
         mov     [YMult], dx
 
-; X-Schleife
+; X loop
 
-@@OC3:  mov     dx, 8                   ; 8 Pixel in bh
-@@OC4:  mov     cx, bx                  ; X-Grî·e des Pixels
-        rol     ah, 1                   ; Pixel setzen ?
-        jc      @@OC5                   ; Ja
+@@OC3:  mov     dx, 8                   ; 8 pixels in bh
+@@OC4:  mov     cx, bx                  ; X size of pixel
+        rol     ah, 1                   ; Set pixel?
+        jc      @@OC5                   ; Yes
 
-; Pixel nicht setzen, trotzdem di erhîhen
+; Do not set pixel, but still increase di
 
         add     di, cx
-        jnc     @@OC7                   ; Kein Segment-öbertrag
-        inc     [Seg64]                 ; öbertrag
-        call    [SegSelect]             ; einstellen
-        jmp     @@OC7                   ; NÑchstes Zeichen-Pixel
+        jnc     @@OC7                   ; No segment carry
+        inc     [Seg64]                 ; Carry
+        call    [SegSelect]             ; set
+        jmp     @@OC7                   ; Next char pixel
 
-; Ende hier wegen Sprungoptimierung
+; End here for jump optimization
 
 OutCharEnd:
         LeaveProc
         ret
 
-; Segment-öberlauf behandeln
+; Handle segment overflow
 
-@@OC9:  inc     [Seg64]                 ; NÑchstes Segment
-        call    [SegSelect]             ; ... einstellen
+@@OC9:  inc     [Seg64]                 ; Next segment
+        call    [SegSelect]             ; ... set
         jmp     @@OC6
 
-@@OC10: inc     [Seg64]                 ; NÑchstes Segment
+@@OC10: inc     [Seg64]                 ; Next segment
         call    [SegSelect]
         jmp     @@OC8
 
-; Pixel XMult mal setzen
+; Set pixel XMult times
 
-@@OC5:  mov     [es:di], al             ; Pixel setzen
-        inc     di                      ; NÑchstes Pixel
-        jz      @@OC9                   ; Segment-öberlauf behandeln
+@@OC5:  mov     [es:di], al             ; Set pixel
+        inc     di                      ; Next pixel
+        jz      @@OC9                   ; Handle segment overflow
 @@OC6:  LOOPCX  @@OC5
 
-; NÑchstes Zeichen-Pixel
+; Next char pixel
 
 @@OC7:  dec     dx
         jnz     @@OC4
 
-; NÑchste gleiche Zeile
+; Next same line
 
-        add     di, [Diff]              ; NÑchste Bildschirmzeile
-        jc      @@OC10                  ; öberlauf
+        add     di, [Diff]              ; Next screen line
+        jc      @@OC10                  ; Overflow
 @@OC8:  dec     [YMult]
         jnz     @@OC3
 
-; NÑchste Y-Zeile
+; Next Y line
 
         inc     si
         cmp     si, Offset CharShape + 8
@@ -1153,36 +1153,35 @@ OutCharEnd:
 ENDP    OutChar
 
 ; ------------------------------------------------------------
-; Ausgabe eines Text-Strings (Pixel-Font). Wird vom Dispatcher aufgerufen.
+; Output of a text string (pixel font). Called by the dispatcher.
 
 PROC    Text    Near
 
-        call    [GE_Ready]              ; Warten bis die GE fertig ist
-        cmp     [TextOrient], 01h       ; 90¯ gedreht ?
+        call    [GE_Ready]              ; Wait until the GE is ready
+        cmp     [TextOrient], 01h       ; Rotated 90¬∞?
         jne     CharLoop
         add     bx, cx
         dec     bx
 
 CharLoop:
-        mov     al, [es:bx]             ; Zeichen vom String
+        mov     al, [es:bx]             ; Character from string
         and     al, al                  ; 0 ?
-        jz      TextEnd                 ; dann Ende
+        jz      TextEnd                 ; then end
         push    es
         push    bx
         push    cx
         mov     bx, [CursorX]
         mov     cx, [CursorY]
-        call    OutChar                 ; Zeichen ausgeben
+        call    OutChar                 ; Output character
         pop     cx
         pop     bx
         pop     es
 
-; GefÑhrlich ! Hier wird die X-Grî·e des Fonts wahlweise auf die X- oder Y-
-; Koordinate draufgerechnet. Das tut nur bei einem Hardware-Font, der
-; X/Y = 1/1 besitzt.
+; Dangerous! Here the X size of the font is optionally added to the X or Y
+; coordinate. This only works for a hardware font with X/Y = 1/1.
 
         mov     dx, [TextSizeX]
-        cmp     [TextOrient], 01h       ; 90¯ gedreht ?
+        cmp     [TextOrient], 01h       ; Rotated 90¬∞?
         jnz     @@L1
         add     [CursorY], dx
         dec     bx
@@ -1192,7 +1191,7 @@ CharLoop:
         inc     bx
 @@L2:   LOOPCX  CharLoop
 
-; Fertig
+; Done
 
 TextEnd:
         ret
@@ -1221,8 +1220,7 @@ PROC    TextStyle Near
         mov     [TextNum], al
         mov     [TextOrient], ah
 
-; X und Y auf je 8 Pixel abrunden und dafÅr sorgen, da· die Grî·e mindestens
-; 1 betrÑgt
+; Round X and Y down to 8 pixels each and ensure that the size is at least 1
 
         and     bx, 00F8h
         jnz     @@L1
@@ -1233,7 +1231,7 @@ PROC    TextStyle Near
         mov     cx, 8
 @@L2:   mov     [TextSizeY], cx
 
-; Die entsprechenden Multiplikatoren setzen
+; Set the corresponding multipliers
 
 IF P80286
         shr     bl, 3
@@ -1253,7 +1251,7 @@ ELSE
 ENDIF
         mov     [Byte low TextMultY], cl
 
-; Jetzt die tatsÑchliche Grî·e rÅckliefern
+; Now return the actual size
 
         mov     bx, [TextSizeX]
         mov     cx, [TextSizeY]
@@ -1280,19 +1278,19 @@ ENDP    TextStyle
 PROC    LineStyle Near
 
         cmp     al, 04h                 ; User-defined ?
-        jz      @@L1                    ; ja
+        jz      @@L1                    ; yes
         xor     ah, ah
-        shl     ax, 1                   ; Nummer * 2 wegen Word
+        shl     ax, 1                   ; Number * 2 because Word
         mov     bx, ax
-        mov     bx, [LineStyles+bx]     ; Bitmuster holen
-@@L1:   mov     [LinePattern], bx       ; Bitmuster merken
-        mov     [LineWidth], cx         ; Linienbreite merken
+        mov     bx, [LineStyles+bx]     ; Get bit pattern
+@@L1:   mov     [LinePattern], bx       ; Store bit pattern
+        mov     [LineWidth], cx         ; Store line width
         ret
 
 ENDP    LineStyle
 
 ; ============================================================================
-; Clip-Fenster setzen
+; Set clip window
 ;
 ;         DW      SETCLIP         ; Define a clipping rectangle
 ;
@@ -1346,100 +1344,100 @@ PROC    SaveBitmap      Near
 
 Local SX1:Word, SDiff:Word, SWidth: Word = L
 
-; Stackframe erzeugen
+; Create stack frame
 
         mov     bp, sp
         sub     sp, L
 
-; Warten bis die GE bereit ist
+; Wait until the GE is ready
 
         call    [GE_Ready]
 
-; X1 speichern. Breite holen und speichern
+; Store X1. Get and store width
 
         mov     [SX1], cx
-        mov     ax, [Word es:bx]        ; Breite - 1
+        mov     ax, [Word es:bx]        ; Width - 1
         inc     ax
-        push    ax                      ; retten
+        push    ax                      ; save
 
-; Errechnen wieviel bei Erreichen des Punktes X2+1 dazugezÑhlt werden mu· um
-; X1 in der nÑchsten Linie zu erreichen
+; Calculate how much must be added when reaching the point X2+1 to
+; reach X1 in the next line
 
         mov     cx, [MaxX]
         sub     cx, ax
-        push    cx                      ; Differenz retten
+        push    cx                      ; save difference
 
-; es:di auf es:bx+4 stellen (Puffer)
+; Set es:di to es:bx+4 (buffer)
 
         lea     di, [bx+4]
 
-; Nach bx die Anzahl der Zeilen holen
+; Get the number of lines into bx
 
-        mov     bx, [es:bx+2]           ; Hîhe - 1
+        mov     bx, [es:bx+2]           ; Height - 1
         inc     bx
 
-; Die Adresse des Pixels bei X1/Y1 berechnen. Danach enthÑlt ax:si die aktuelle
-; Adresse, ds zeigt auf's Videosegment (keine Variablen mehr !!!)
+; Calculate the address of the pixel at X1/Y1. Afterwards, ax:si contains the
+; current address, ds points to the video segment (no more variables!!!)
 
         mov     ax, dx                  ; Y1
         add     ax, [PageOfs]
-        mul     [MaxX]                  ; dx ist futsch
+        mul     [MaxX]                  ; dx is lost
         add     ax, [SX1]
-        adc     dl, 0                   ; öberlauf
-        xchg    si, ax                  ; Offset nach si
+        adc     dl, 0                   ; overflow
+        xchg    si, ax                  ; Offset to si
         mov     [Seg64], dl             ; Segment
-        call    [SegSelect]             ; Segment einstellen
+        call    [SegSelect]             ; Set segment
 
         mov     ds, [VideoSeg]
-        pop     dx                      ; Differenz (X2/Y) zu (X1/Y+1)
-        pop     bp                      ; Breite des Rechtecks nach bp
+        pop     dx                      ; Difference (X2/Y) to (X1/Y+1)
+        pop     bp                      ; Width of rectangle to bp
 
-; Y-Schleife
+; Y-loop
 
-Save1:  mov     cx, bp                  ; Breite des Rechtecks = Anzahl Punkte
+Save1:  mov     cx, bp                  ; Width of rectangle = number of points
 
-; Testen, ob in der Zeile ein Segment-öberlauf auftreten kann
+; Test if a segment overflow can occur in the line
 
-        mov     ax, si                  ; Bildschirm-Offset
-        add     ax, cx                  ; + zu holende Pixel
-        jc      Save4                   ; Ja, öberlauf
+        mov     ax, si                  ; Screen offset
+        add     ax, cx                  ; + pixels to get
+        jc      Save4                   ; Yes, overflow
 
-; Zeile hat keinen öberlauf
+; Line has no overflow
 		RepMovS
-; Neue Zeile
+; New line
 
 Save2:  add     si, dx
-        jc      Save7                   ; öbertrag
-Save3:  dec     bx                      ; Noch Zeilen ?
-        jnz     Save1                   ; Ja
+        jc      Save7                   ; Carry
+Save3:  dec     bx                      ; More lines?
+        jnz     Save1                   ; Yes
 
-; Ende
+; End
 
         add     sp, L
         ret
 
-; X-Schleife wenn öberlauf
+; X-loop if overflow
 
 Even
-Save4:  movsb                           ; Byte Åbertragen
+Save4:  movsb                           ; Transfer byte
         test    si, si
-        jz      Save6                   ; öbertrag
+        jz      Save6                   ; Carry
 Save5:  LOOPCX  Save4
         jmp     Save2
 
-; Segment-öberlauf in der X-Schleife korrigieren
+; Correct segment overflow in X-loop
 
 Save6:  SetToDS ds
-        inc     [Seg64]                 ; öberlauf
-        call    [SegSelect]             ; Neues Segment einstellen
+        inc     [Seg64]                 ; overflow
+        call    [SegSelect]             ; Set new segment
         mov     ds, [VideoSeg]
         jmp     Save5
 
-; Segment-öberlauf in der Y-Schleife korrigieren
+; Correct segment overflow in Y-loop
 
 Save7:  SetToDS ds
-        inc     [Seg64]                 ; öberlauf
-        call    [SegSelect]             ; Neues Segment einstellen
+        inc     [Seg64]                 ; overflow
+        call    [SegSelect]             ; Set new segment
         mov     ds, [VideoSeg]
         jmp     Save3
 
@@ -1488,73 +1486,73 @@ ENDP    SaveBitmap
 
 
 ;---------------------------------------------------
-; Zuerst eine Reihe Unterprogramm, die jeweils eine Zeile im entsprechenden
-; Mode kopieren. Registerbelegung siehe RestoreBitmap
+; First, a series of subroutines, each copying a line in the corresponding
+; mode. Register usage see RestoreBitmap
 ;
-; Folgende Register dÅrfen von den Unterprogrammen verÑndert werden:
+; The following registers may be modified by the subroutines:
 ; AX, DI
 ;
-; Die Unterprogramme, die eine VerÑnderung vornehmen sind hier als
-; Macro codiert (OPC ist der zustÑndige Operand):
+; The subroutines that perform a modification are coded here as
+; macros (OPC is the responsible operand):
 ;
 
 MACRO   RestoreOP OP
 
-; Testen, ob in der Zeile ein öberlauf auftreten kann
+; Test if an overflow can occur in the line
 
         mov     ax, di                  ;; Offset
-        add     ax, cx                  ;; + zu setzende Pixel
-        jc      @@L4                    ;; öberlauf mîglich
+        add     ax, cx                  ;; + pixels to set
+        jc      @@L4                    ;; overflow possible
 
-; Zeile kann ohne öberlauf kopiert werden
+; Line can be copied without overflow
 
-        shr     cx, 1                   ;; Ungerade Anzahl ?
-        jnc     @@L1                    ;; Nein
-        lodsb                           ;; Ja: Byte verarbeiten
+        shr     cx, 1                   ;; Odd number?
+        jnc     @@L1                    ;; No
+        lodsb                           ;; Yes: process byte
         OP      [BYTE es:di], al
         inc     di
-@@L1:   jcxz    @@L7                    ;; Nix mehr zu tun
+@@L1:   jcxz    @@L7                    ;; Nothing more to do
 
 IF P80386
-        shr     cx, 1                   ;; Ungerade Wort-Anzahl ?
-        jnc     @@L2                    ;; Nein
-        lodsw                           ;; Ja: Wort verarbeiten
+        shr     cx, 1                   ;; Odd word count?
+        jnc     @@L2                    ;; No
+        lodsw                           ;; Yes: process word
         OP      [WORD es:di], ax
         Add2	di
 @@L2:   jcxz    @@L7
 
 ALIGN 4
 @@L3:   lodsd
-        OP      [DWORD es:di], eax      ;; XORen
+        OP      [DWORD es:di], eax      ;; XOR
         add     di, 4
         loop	@@L3
         ret
 ELSE
 
 ALIGN 4
-@@L2:   lodsw                           ;; Wort holen
-        OP      [WORD es:di], ax        ;; XORen
-        Add2	di						; nÑchstes Wort adressieren
+@@L2:   lodsw                           ;; Get word
+        OP      [WORD es:di], ax        ;; XOR
+        Add2	di						; address next word
         loop	@@L2
         ret
 ENDIF
 
-; Zeile kopieren wenn Segment-öberlauf
+; Copy line if segment overflow
 
 EVEN
-@@L4:   lodsb                           ;; Byte holen
-        OP      [BYTE es:di], al        ;; XORen
+@@L4:   lodsb                           ;; Get byte
+        OP      [BYTE es:di], al        ;; XOR
         inc     di
-        jz      @@L6                    ;; Kein öbertrag
+        jz      @@L6                    ;; No carry
 @@L5:   
 		loop	@@L4
 @@L7:   ret
 
-@@L6:   mov     ax, ds                  ;; ds retten
-        SetToDS ds                      ;; und neu laden
-        inc     [Seg64]                 ;; öbertrag
-        call    [SegSelect]             ;; Neues Segment setzen
-        mov     ds, ax                  ;; altes ds wiederherstellen
+@@L6:   mov     ax, ds                  ;; save ds
+        SetToDS ds                      ;; and reload
+        inc     [Seg64]                 ;; carry
+        call    [SegSelect]             ;; Set new segment
+        mov     ds, ax                  ;; restore old ds
         jmp     @@L5
 
 ENDM    RestoreOP
@@ -1562,34 +1560,32 @@ ENDM    RestoreOP
 
 
 
-
-
 PROC    RestoreOver     Near
 
-; Testen, ob in der Zeile ein öberlauf auftreten kann
+; Test if an overflow can occur in the line
 
         mov     ax, di                  ; Offset
-        add     ax, cx                  ; + zu setzende Pixel
-        jc      ROver1                  ; öberlauf mîglich
+        add     ax, cx                  ; + pixels to set
+        jc      ROver1                  ; overflow possible
 
-; Kein öberlauf mîglich
+; No overflow possible
 		RepMovS
-        ret                             ; und Ende
+        ret                             ; and end
 
-; Zeile kopieren wenn Segment-öberlauf in der Zeile
+; Copy line if segment overflow in the line
 
 Even
-ROver1: movsb                           ; Byte Åbertragen
+ROver1: movsb                           ; Transfer byte
         test    di, di
-        jz      ROver3                  ; Kein öbertrag
+        jz      ROver3                  ; No carry
 ROver2: LOOPCX  ROver1
         ret
 
-ROver3: mov     ax, ds                  ; ds retten
-        SetToDS ds                      ; und neu laden
-        inc     [Seg64]                 ; öbertrag
-        call    [SegSelect]             ; Neues Segment setzen
-        mov     ds, ax                  ; altes ds wiederherstellen
+ROver3: mov     ax, ds                  ; save ds
+        SetToDS ds                      ; and reload
+        inc     [Seg64]                 ; carry
+        call    [SegSelect]             ; Set new segment
+        mov     ds, ax                  ; restore old ds
         jmp     ROver2
 
 ENDP    RestoreOver
@@ -1620,19 +1616,19 @@ ENDP    RestoreAND
 
 PROC    RestoreNOT      NEAR
 
-RNOT1:  lodsb                           ; Byte holen
+RNOT1:  lodsb                           ; Get byte
         not     al                      ; Complement
-        mov     [Byte es:di], al        ; NOTen
+        mov     [Byte es:di], al        ; NOT
         inc     di
-        jz      RNOT3                   ; öbertrag
+        jz      RNOT3                   ; carry
 RNOT2:  LOOPCX  RNOT1
         ret
 
-RNOT3:  mov     ax, ds                  ; ds retten
-        SetToDS ds                      ; und neu laden
-        inc     [Seg64]                 ; öbertrag
-        call    [SegSelect]             ; Neues Segment setzen
-        mov     ds, ax                  ; altes ds wiederherstellen
+RNOT3:  mov     ax, ds                  ; save ds
+        SetToDS ds                      ; and reload
+        inc     [Seg64]                 ; carry
+        call    [SegSelect]             ; Set new segment
+        mov     ds, ax                  ; restore old ds
         jmp     RNOT2
 
 ENDP    RestoreNOT
@@ -1643,38 +1639,38 @@ ENDP    RestoreNOT
 
 PROC    RestoreTrans    NEAR
 
-@@L1:   ;mov     al, [si]                ; Byte holen
+@@L1:   ;mov     al, [si]                ; Get byte
         ;inc     si
         lodsb
         test    al, al                   ; = 0
-        jz      @@L3                    ; Dann nicht schreiben
-        mov     [es:di], al             ; Byte schreiben
+        jz      @@L3                    ; Then do not write
+        mov     [es:di], al             ; Write byte
         inc     di
-        test    di, di                  ; öberlauf ?
-        jz      @@L2                    ; Springe wenn ja
+        test    di, di                  ; overflow?
+        jz      @@L2                    ; Jump if yes
         loop	@@L1
-        jmp     @@L4                    ; Springe ans Ende
+        jmp     @@L4                    ; Jump to end
 
-; Segment-öberlauf behandeln
-; ACHTUNG: Dies mu· immer geschehen, auch dann wenn der ZÑhler in cx abgelaufen
-; ist. Die Abfrage auf cx=0 kommt am Ende der Segmentkorrektur !!!
+; Handle segment overflow
+; ATTENTION: This must always be done, even if the counter in cx has expired.
+; The check for cx=0 comes at the end of the segment correction!!!
 
-@@L2:   mov     ax, ds                  ; ds retten
-        SetToDS ds                      ; und mit Datensegment laden
+@@L2:   mov     ax, ds                  ; save ds
+        SetToDS ds                      ; and load with data segment
         inc     [Seg64]
         call    [SegSelect]
-        mov     ds, ax                  ; altes ds
-        jcxz    @@L4                    ; Nur fÅr den Fall des Falles
+        mov     ds, ax                  ; old ds
+        jcxz    @@L4                    ; Just in case
         jmp     @@L1
 
-; Byte nicht schreiben
+; Do not write byte
 
 EVEN
-@@L3:   inc     di                      ; Byte Åberspringen
-        loopne  @@L1                    ; Schleife wenn kein Seg-öberlauf
-        je      @@L2                    ; Springe wenn öberlauf
+@@L3:   inc     di                      ; Skip byte
+        loopne  @@L1                    ; Loop if no seg overflow
+        je      @@L2                    ; Jump if overflow
 
-; Ende
+; End
 
 @@L4:   ret
 
@@ -1682,7 +1678,7 @@ ENDP    RestoreTrans
 
 
 ;---------------------------------------------------
-; Eine Tabelle mit den Adressen der Funktionen
+; A table with the addresses of the functions
 
 RestProcTable   dw      RestoreOver
                 dw      RestoreXOR
@@ -1697,93 +1693,93 @@ PROC    RestoreBitmap      NEAR
 
 Local RX1:Word, RWidth: Word, RestProc: Word = LocalSize
 
-; Stackframe erzeugen
+; Create stack frame
 
         EnterProc       LocalSize
-        push    ds                      ; Das brauchen wir
-        cld                             ; das auch...
+        push    ds                      ; We need this
+        cld                             ; this too...
 
-; Warten bis die GE bereit ist
+; Wait until the GE is ready
 
         call    [GE_Ready]
 
-; X1 speichern. RCopy mit einem Vektor belegen, der die Mode entsprechende
-; Operation ausfÅhrt. Breite holen und speichern
+; Store X1. Assign RCopy with a vector that performs the mode-specific
+; operation. Get and store width
 
         mov     [RX1], cx
 
         cbw                             ; al --> ax
         mov     di, ax                  ; ax --> di
-        shl     di, 1                   ; * 2 fÅr Wort
-        mov     di, [RestProcTable+di]  ; Adresse
-        mov     [RestProc], di          ; speichern
+        shl     di, 1                   ; * 2 for word
+        mov     di, [RestProcTable+di]  ; Address
+        mov     [RestProc], di          ; store
 
-        mov     ax, [WORD es:bx]        ; Breite - 1
+        mov     ax, [WORD es:bx]        ; Width - 1
         inc     ax
         mov     [RWidth], ax
 
-; Errechnen wieviel bei Erreichen des Punktes X2+1 dazugezÑhlt werden mu· um
-; X1 in der nÑchsten Linie zu erreichen
+; Calculate how much must be added when reaching the point X2+1 to
+; reach X1 in the next line
 
         mov     cx, [MaxX]
         sub     cx, ax
-        push    cx                      ; Wert retten
+        push    cx                      ; save value
 
-; si auf bx+4 stellen (Puffer)
+; Set si to bx+4 (buffer)
 
         lea     si, [bx+4]
 
-; Nach bx die Anzahl der Zeilen holen
+; Get the number of lines into bx
 
-        mov     bx, [es:bx+2]           ; Hîhe - 1
+        mov     bx, [es:bx+2]           ; Height - 1
         inc     bx
 
-; Die Adresse des Pixels bei X1/Y1 berechnen. Danach enthÑlt ax:di die aktuelle
-; Adresse, es zeigt auf's Videosegment, ds auf den Puffer
+; Calculate the address of the pixel at X1/Y1. Afterwards, ax:di contains the
+; current address, es points to the video segment, ds to the buffer
 
         mov     ax, dx                  ; Y1
-        add     ax, [PageOfs]           ; Bildschirmseiten-Korrektur
-        mul     [MaxX]                  ; dx ist futsch
+        add     ax, [PageOfs]           ; Screen page correction
+        mul     [MaxX]                  ; dx is lost
         add     ax, [RX1]
-        adc     dl, 0                   ; öberlauf
-        xchg    di, ax                  ; Offset nach di
-        mov     [Seg64], dl             ; Segment merken
-        call    [SegSelect]             ; Segment einstellen
+        adc     dl, 0                   ; overflow
+        xchg    di, ax                  ; Offset to di
+        mov     [Seg64], dl             ; Store segment
+        call    [SegSelect]             ; Set segment
 
         mov     cx, es
         mov     es, [VideoSeg]          ; VideoSeg in es:di
-        mov     ds, cx                  ; Puffer in ds:si
+        mov     ds, cx                  ; Buffer in ds:si
 
         pop     dx                      ; RDiff ((Y/X2) --> (Y+1/X1) in dx)
 
 
-; Y-Schleife
+; Y-loop
 
-@@L1:   mov     cx, [RWidth]            ; Breite des Rechtecks = Anzahl Punkte
+@@L1:   mov     cx, [RWidth]            ; Width of rectangle = number of points
 
-; X-Schleife
+; X-loop
 
         call    [RestProc]              ; Doit yeah !
 
-; Neue Zeile
+; New line
 
         add     di, dx
-        jc      @@L3                    ; öbertrag
-@@L2:   dec     bx                      ; Noch Zeilen ?
-        jnz     @@L1                    ; Ja
+        jc      @@L3                    ; carry
+@@L2:   dec     bx                      ; More lines?
+        jnz     @@L1                    ; Yes
 
-; Ende
+; End
 
         pop     ds
         LeaveProc
         ret
 
-; Segment-öberlauf korrigieren
+; Correct segment overflow
 
 @@L3:   mov     ax, ds
-        SetToDS ds                      ; Datensegment laden
-        inc     [Seg64]                 ; öberlauf
-        call    [SegSelect]             ; Neues Segment setzen
+        SetToDS ds                      ; Load data segment
+        inc     [Seg64]                 ; carry
+        call    [SegSelect]             ; Set new segment
         mov     ds, ax
         jmp     @@L2
 
@@ -1824,34 +1820,34 @@ PROC    Palette   Near
         test    ah, 0c0h        ; Code = 00 ?
         jnz     @@L1
 
-; Bits 00, bx = Farbe, ax = Index
+; Bits 00, bx = color, ax = index
 
         mov     bh, bl
         mov     bl, al           ; bl = Index, bh = Color
         jmp     @@L2
 
-; Bits 10 oder 11
+; Bits 10 or 11
 
 @@L1:   test    ah, 40h
         jz      RGBPalette
 
-; Bits 11, bx ist Hintergrundfarbe
+; Bits 11, bx is background color
 
-        mov     bh, bl                  ; Farbe in bh
-        xor     bl, bl                  ; Index fÅr Hintergrund ist 0
-        mov     [BkColor], bh           ; Hintergrundfarbe merken
-@@L2:   mov     ax, 1000h               ; Setze Palettenregister
+        mov     bh, bl                  ; Color in bh
+        xor     bl, bl                  ; Index for background is 0
+        mov     [BkColor], bh           ; Remember background color
+@@L2:   mov     ax, 1000h               ; Set palette register
         int     10h
         ret
 
 ; Bits 10 --> RGB-Palette
-; Zur Anpassung an das Handbuch mÅssen die Farbwerte noch jeweils um 2 Bit nach
-; rechts geschoben werden, die untersten 2 Bit sind laut Handbuch nicht belegt,
-; der DAC benîtigt aber einen Bereich von 0..3Fh
+; To match the manual, the color values must each be shifted right by 2 bits,
+; the lowest 2 bits are not used according to the manual, but the DAC needs
+; a range of 0..3Fh
 
-; énderung am 21.08.1991 laut c't 9/91 S. 162. Vor dem Setzen des Blau-Anteils
-; wird auf den horizontalen StrahlrÅcklauf gewartet um Zugriffskonflikte
-; ("Schnee") zu verhindern. Interrupts werden nicht mehr gesperrt.
+; Change on 21.08.1991 according to c't 9/91 p. 162. Before setting the blue
+; component, wait for the horizontal retrace to avoid access conflicts
+; ("snow"). Interrupts are no longer disabled.
 
 RGBPalette:
 IF P80286
@@ -1870,30 +1866,30 @@ ENDIF
         mov     si, dx
         mov     dx, 3C8h
 
-        out     dx, al                  ; Nummer des Eintrags
+        out     dx, al                  ; Entry number
         inc     dx
         mov     ax, bx
         out     dx, al                  ; Red
         mov     ax, cx
         out     dx, al                  ; Green
 
-; Warten auf den horizontalen StrahlrÅcklauf
+; Wait for horizontal retrace
 
         mov     dx, 03DAh
 @@L3:   in      al, dx
         test    al, 1
-        jnz     @@L3                    ; Auf das Ende des H-Syncs warten
+        jnz     @@L3                    ; Wait for end of H-Sync
 @@L4:   in      al, dx
         test    al, 1
-        jz      @@L4                    ; Auf den Beginn des H-Syncs warten
+        jz      @@L4                    ; Wait for start of H-Sync
 
-; Blau-Anteil jetzt setzen
+; Now set blue component
 
         mov     dx, 03C9h
         xchg    ax, si
         out     dx, al                  ; Blue
 
-; Ende
+; End
 
         ret
 
@@ -1922,8 +1918,8 @@ PROC    AllPalette      Near
 
         mov     al, 02h
         mov     dx, bx
-        mov     ah, 16                  ; 16 StÅck hier nur wegen KompatibilitÑt
-        int     10h                     ; Setze Palette
+        mov     ah, 16                  ; 16 entries here only for compatibility
+        int     10h                     ; Set palette
         ret
 
 ENDP    AllPalette
@@ -1951,14 +1947,14 @@ ENDP    AllPalette
 ;
 ;
 
-; Hier wird immer von einem horizontalen String ausgegangen !
+; This always assumes a horizontal string!
 
 PROC    TextSize        Near
 
-        xchg    ax, cx                  ; LÑnge nach ax
-        mul     [TextSizeX]             ; * Breite eines Zeichens
-        xchg    bx, ax                  ; Resultat nach bx
-        mov     cx, [TextSizeY]         ; cx ist Hîhe eines Zeichens
+        xchg    ax, cx                  ; Length to ax
+        mul     [TextSizeX]             ; * width of a character
+        xchg    bx, ax                  ; Result to bx
+        mov     cx, [TextSizeY]         ; cx is height of a character
         ret
 
 ENDP    TextSize
@@ -1966,7 +1962,7 @@ ENDP    TextSize
 
 ; =========================================================================
 ;
-; FloodFill-Routine einbinden
+; FloodFill routine include
 ;
 
 INCLUDE "fill.asi"
@@ -1974,22 +1970,22 @@ INCLUDE "fill.asi"
 
 ; =========================================================================
 ;
-; Routine zum Holen eines Pixels. Erwartet X/Y in ax/bx.
-; Resultat: Farbe in dl.
-; Wartet aus Performance-GrÅnden nicht auf die GE
+; Routine to get a pixel. Expects X/Y in ax/bx.
+; Result: Color in dl.
+; For performance reasons, does not wait for the GE
 ;
 
 PROC    GetPixel Near
 
-        add     bx, [PageOfs]                   ; Bildschirmseiten-Korrektur
+        add     bx, [PageOfs]                   ; Screen page correction
         xchg    ax, bx                          ; Y in ax, X in bx
-        mul     [MaxX]                          ; * ZeilenlÑnge
-        add     bx, ax                          ; + Offset
-        adc     dl, 0                           ; Segment-öberlauf
-        mov     [Seg64], dl                     ; Segment merken
-        call    [SegSelect]                     ; und einstellen
-        mov     ds, [VideoSeg]                  ; Videosegment laden
-        mov     dl, [bx]                        ; Byte holen
+        mul     [MaxX]                          ; * line length
+        add     bx, ax                          ; + offset
+        adc     dl, 0                           ; Segment overflow
+        mov     [Seg64], dl                     ; Remember segment
+        call    [SegSelect]                     ; and set
+        mov     ds, [VideoSeg]                  ; Load video segment
+        mov     dl, [bx]                        ; Get byte
         ret
 
 ENDP    GetPixel
@@ -1998,24 +1994,24 @@ ENDP    GetPixel
 
 ; =========================================================================
 ;
-; Routine zum Setzen eines Pixels. Erwartet X/Y in ax/bx, Farbe in dl.
+; Routine to set a pixel. Expects X/Y in ax/bx, color in dl.
 ;
-; Wartet aus Performance-GrÅnden nicht auf die GE
+; For performance reasons, does not wait for the GE
 ;
 
 
 PROC    PutPixel
 
-        add     bx, [PageOfs]                   ; Bildschirmseiten-Korrektur
-        mov     cl, dl                          ; Farbe retten
+        add     bx, [PageOfs]                   ; Screen page correction
+        mov     cl, dl                          ; Save color
         xchg    ax, bx                          ; Y in ax, X in bx
-        mul     [MaxX]                          ; * ZeilenlÑnge
-        add     bx, ax                          ; + Offset
-        adc     dl, 0                           ; Segment-öberlauf
-        mov     [Seg64], dl                     ; Segment merken
-        call    [SegSelect]                     ; Segment einstellen
-        mov     ds, [VideoSeg]                  ; Videosegment holen
-        mov     [bx], cl                        ; Byte schreiben
+        mul     [MaxX]                          ; * line length
+        add     bx, ax                          ; + offset
+        adc     dl, 0                           ; Segment overflow
+        mov     [Seg64], dl                     ; Remember segment
+        call    [SegSelect]                     ; Set segment
+        mov     ds, [VideoSeg]                  ; Get video segment
+        mov     [bx], cl                        ; Write byte
         ret
 
 ENDP    PutPixel
@@ -2101,7 +2097,7 @@ PROC    BitMapUtil Near
 ENDP    BitMapUtil
 
 ;---------------------------------------------------
-; Die diversen Funktionen der BitMapUtil-Tabelle beginnen hier
+; The various functions of the BitMapUtil table start here
 
 PROC    GetPixByte      FAR
 
@@ -2127,21 +2123,21 @@ ENDP    SetWriteMode
 PROC    SetDrawPage FAR
 
         push    ds
-        SetToDS ds                              ; Datensegment korrekt laden
+        SetToDS ds                              ; Load data segment correctly
 
-; Kartenspezifische Routine aufrufen
+; Call card-specific routine
 
-        mov     bx, [ModePtr]                   ; Zeiger auf Modus-Deskriptor
+        mov     bx, [ModePtr]                   ; Pointer to mode descriptor
         
 		IF P80386        
-			movzx     bx, [(TMode bx).CardType]       ; Kartentyp holen
+			movzx     bx, [(TMode bx).CardType]       ; Get card type
 		ELSE
-	        mov     bl, [(TMode bx).CardType]       ; Kartentyp holen
-    	    xor     bh, bh                           ; ... nach bx
+	        mov     bl, [(TMode bx).CardType]       ; Get card type
+    	    xor     bh, bh                           ; ... into bx
 		ENDIF
       
-        shl     bx, 1                           ; * 2 fÅr Wortzugriff
-        call    [SetDrawPageTable+bx]           ; kartenspezifischer Aufruf
+        shl     bx, 1                           ; * 2 for word access
+        call    [SetDrawPageTable+bx]           ; card-specific call
 
         pop     ds
         ret
@@ -2152,22 +2148,22 @@ ENDP    SetDrawPage
 PROC    SetVisualPage FAR
 
         push    ds
-        SetToDS ds                              ; Datensegment laden
+        SetToDS ds                              ; Load data segment
 
-; Kartenspezifische Routine aufrufen
+; Call card-specific routine
 
-        mov     bx, [ModePtr]                   ; Zeiger auf Modus-Deskriptor
+        mov     bx, [ModePtr]                   ; Pointer to mode descriptor
         
 		IF P80386        
 			movzx   bx, [(TMode bx).CardType]
 		ELSE
-	        mov     bl, [(TMode bx).CardType]       ; Kartentyp holen
-	        xor     bh, bh                           ; ... nach bx
+	        mov     bl, [(TMode bx).CardType]       ; Get card type
+	        xor     bh, bh                           ; ... into bx
 		ENDIF
 
         
-        shl     bx, 1                           ; * 2 fÅr Wortzugriff
-        call    [SetVisualPageTable+bx]         ; kartenspezifischer Aufruf
+        shl     bx, 1                           ; * 2 for word access
+        call    [SetVisualPageTable+bx]         ; card-specific call
 
         pop     ds
         ret
@@ -2216,8 +2212,8 @@ PROC    ColorQuery NEAR
 
         cmp     al,01h
         jz      @@L1
-        mov     bx, AvailColors         ; 16 Farben belegt
-        mov     cx, MaxColors-1         ; aber 256 zulÑssig
+        mov     bx, AvailColors         ; 16 colors occupied
+        mov     cx, MaxColors-1         ; but 256 allowed
         ret
 
 @@L1:   push    ds
@@ -2248,26 +2244,26 @@ PROC    PatBar NEAR
 
 Local BX1:Word, BY1:Word, Diff:Word, BHe:Word, BW:Word, Lines:Word, Lines8:Word = L
 
-; Stackframe erzeugen (bp mu· nicht gerettet werden)
+; Create stack frame (bp does not need to be saved)
 
         mov     bp, sp
         sub     sp, L
 
-; Warten bis die GE bereit ist
+; Wait until the GE is ready
 
         call    [GE_Ready]
 
-; Y-Werte um den Offset fÅr die eingestellte Bildschirmseite korrigieren
+; Correct Y values for the set screen page offset
 
         mov     si, [PageOfs]
         add     bx, si
         add     dx, si
 
-; X1/Y1 und X2/Y2 so umnudeln das X1<=X2 und Y1<=Y2.
-; X2 und Y2 werden nur benîtigt um Breite und Hîhe zu rechnen und werden nicht
-; gespeichert
-; Die Umtauscherei am Anfang ist leider notwendig, wenn auch nicht
-; dokumentiert...
+; Rearrange X1/Y1 and X2/Y2 so that X1<=X2 and Y1<=Y2.
+; X2 and Y2 are only needed to calculate width and height and are not
+; stored.
+; The swapping at the beginning is unfortunately necessary, even if not
+; documented...
 
         cmp     ax, cx
         jb      @@L1
@@ -2278,28 +2274,28 @@ Local BX1:Word, BY1:Word, Diff:Word, BHe:Word, BW:Word, Lines:Word, Lines8:Word 
 @@L2:   mov     [BX1], ax
         mov     [BY1], bx
 
-; Errechnen wieviel bei Erreichen des Punktes X2+1 dazugezÑhlt werden mu· um
-; X1 in der nÑchsten Linie zu erreichen
-; Breite und Hîhe in Pixeln rechnen
+; Calculate how much must be added when reaching the point X2+1 to get
+; to X1 in the next line
+; Calculate width and height in pixels
 
         sub     dx, bx                  ; Y2 - Y1
         inc     dx                      ; + 1
-        mov     [BHe], dx               ; = Hîhe
+        mov     [BHe], dx               ; = height
         sub     cx, ax                  ; X2 - X1
         inc     cx                      ; + 1
-        mov     [BW], cx                ; = Breite
+        mov     [BW], cx                ; = width
         mov     ax, [MaxX]
         sub     ax, cx
         mov     [Diff], ax              ; X2+1+Diff = X1 + MaxX
 
-; Das achtfache der ZeilenlÑnge in Bytes zwischenspeichern. Alle 8 Zeilen
-; wiederholt sich nÑmlich das Muster, und (wenn zwischen den 8 Zeilen kein
-; öberlauf auftritt) kann einfach mit rep movsb kopiert werden.
-; Au·erdem mu· ein ZÑhler fÅr die Zeilen mitgefÅhrt werden, da das nur geht,
-; wenn mindestens 7 Zeilen geschrieben worden sind (sieht zwar auch sonst gut
-; aus, erfÅllt aber andere Kriterien ).
+; Store eight times the line length in bytes. Every 8 lines the pattern
+; repeats, and (if there is no overflow between the 8 lines) we can simply
+; copy with rep movsb.
+; Also, a counter for the lines must be kept, since this only works if at
+; least 7 lines have been written (looks good otherwise, but does not meet
+; other criteria).
 
-        mov     ax, [MaxX]              ; ZeilenlÑnge in Bytes
+        mov     ax, [MaxX]              ; Line length in bytes
 IF P80286
         shl     ax, 3
 ELSE
@@ -2307,20 +2303,20 @@ ELSE
         shl     ax, 1
         shl     ax, 1                   ; * 8
 ENDIF
-        mov     [Lines8], ax            ; Bytes fÅr 8 Zeilen
-        mov     [Lines], 0000           ; ZeilenzÑhler
+        mov     [Lines8], ax            ; Bytes for 8 lines
+        mov     [Lines], 0000           ; Line counter
 
-; Adresse des gerade bearbeiteten Punktes ist in al:di.
+; Address of the currently processed point is in al:di.
 
         mov     ax, [MaxX]
-        mul     [BY1]                   ; BY1 * MaxX, dx ist futsch
+        mul     [BY1]                   ; BY1 * MaxX, dx is trashed
         add     ax, [BX1]
-        adc     dx, 0                   ; öberlauf
+        adc     dx, 0                   ; Overflow
         mov     di, ax                  ; Offset
         mov     [Seg64], dl             ; Segment
-        call    [SegSelect]             ; Segment setzen
+        call    [SegSelect]             ; Set segment
 
-; es aufs Videosegment setzen
+; Set es to video segment
 
         mov     es, [VideoSeg]
 
@@ -2328,121 +2324,121 @@ ENDIF
 
         and     [BX1], 7                ; BX1 mod 8
 
-; Zwei SpezialfÑlle abprÅfen: EmptyFill und SolidFill.
+; Check two special cases: EmptyFill and SolidFill.
 
 		IF P80386        
 			movzx     ax, [FillColor]
 		ELSE
-	        xor     ah, ah                  ; Farbe = Hintergrundfarbe
+	        xor     ah, ah                  ; Color = background color
 	        mov     al, [FillColor]
 		ENDIF
 
         cmp     [FillPatternNum], SolidFill
-        je      PatBar1                 ; al = SolidFill-Farbe
+        je      PatBar1                 ; al = SolidFill color
         xchg    ah, al                  ; al=0, ah=FillColor, Flags=Const
-        jb      PatBar1                 ; Springe wenn EmptyFill
+        jb      PatBar1                 ; Jump if EmptyFill
 
-; Farbe nach bx laden
+; Load color into bx
 
-        mov     bx, ax                  ; bh=FillColor, bl=0 (Hintergrund)
+        mov     bx, ax                  ; bh=FillColor, bl=0 (background)
 
-; Y-Schleife
-; Passendes Muster fÅr den Y-Wert holen
+; Y loop
+; Get matching pattern for Y value
 
 Even
-Bar1:   mov     cx, [BW]                ; Breite des Rechtecks = Anzahl Punkte
+Bar1:   mov     cx, [BW]                ; Width of rectangle = number of points
 
-; PrÅfen, ob innerhalb der Zeile ein Segment-öberlauf auftreten kann. Wenn
-; ja, dann FÅllen mit AbprÅfen des Overflows und Muster per Hand.
+; Check if a segment overflow can occur within the line. If
+; so, fill with overflow check and pattern by hand.
 
-        mov     dx, di                  ; Adress Offset
-        add     dx, cx                  ; + zu setzende Pixel
+        mov     dx, di                  ; Address offset
+        add     dx, cx                  ; + pixels to set
         jc      Bar2
 
-; In dieser Zeile tritt kein öberlauf auf.
-; Als nÑchstes prÅfen, ob bereits 7 Zeilen auf dem Bildschirm stehen. Wenn
-; nicht --> FÅllen zu Fu·
+; No overflow in this line.
+; Next, check if there are already 7 lines on the screen. If
+; not --> fill by hand
 
         cmp     [Lines], 7
-        jbe     Bar2                    ; war nix
+        jbe     Bar2                    ; nothing
 
-; Wir haben mehr als 7 Zeilen, d.h. wenn die Zeile von 8 Zeilen vorher im
-; selben Segment liegt kînnen wir einfach kopieren.
+; We have more than 7 lines, i.e. if the line from 8 lines before is
+; in the same segment, we can simply copy.
 
         mov     si, di                  ;
-        sub     si, [Lines8]            ; - Bytes fÅr 8 Zeilen
-        jc      Bar2                    ; öberlauf, war nix
+        sub     si, [Lines8]            ; - bytes for 8 lines
+        jc      Bar2                    ; overflow, nothing
 
-; Sodele: FÅllen durch Kopieren
+; So: fill by copying
 
-        mov     dx, ds                  ; ds retten
-        mov     ds, [VideoSeg]          ; ... und auch auf's Videosegment
-        test    di, 1                   ; Adresse ungerade ?
-        jz      Bar02                   ; Nein
-        movsb                           ; 1 Byte kopieren (--> Adresse gerade)
-        loopz   Bar03                   ; ein Byte weniger Fertig !
+        mov     dx, ds                  ; save ds
+        mov     ds, [VideoSeg]          ; ... and also to video segment
+        test    di, 1                   ; Address odd?
+        jz      Bar02                   ; No
+        movsb                           ; Copy 1 byte (--> address even)
+        loopz   Bar03                   ; one byte less, done!
 Bar02:
 		RepMovS
 Bar03:  mov     ds, dx
 
-; NÑchste Linie
+; Next line
 
-Bar4:   inc     [BY1]                   ; NÑchste Zeile
-        add     di, [Diff]              ; Adresse weitersetzen
-        jc      Bar04                   ; öbertrag auf Segment
-Bar0:   inc     [Lines]                 ; Wir haben eine Zeile mehr
-        dec     [BHe]                   ; Hîhe - 1
+Bar4:   inc     [BY1]                   ; Next line
+        add     di, [Diff]              ; Continue address
+        jc      Bar04                   ; Carry to segment
+Bar0:   inc     [Lines]                 ; We have one more line
+        dec     [BHe]                   ; Height - 1
         jnz     Bar1
 
-; Und hier ist das Ende. ds wird nicht rÅckgesetzt, weil der Dispatcher es
-; sowieso nochmals popt
+; And here is the end. ds is not reset because the dispatcher
+; pops it anyway
 
 PatBarEnd:
         add     sp, L
         ret
 
-; Segment-öberlauf in der Y-Schleife behandeln
+; Handle segment overflow in the Y loop
 
-Bar04:  inc     [Seg64]                 ; öbertrag
-        call    [SegSelect]             ; Segment einstellen
-        jmp     Bar0                    ; Und weiter
+Bar04:  inc     [Seg64]                 ; Carry
+        call    [SegSelect]             ; Set segment
+        jmp     Bar0                    ; And continue
 
 ; ----------------------------------------------------
-; Zeile mit öberlauf oder zu wenig Zeilen zum Kopieren
-; Passendes Muster fÅr den Y-Wert holen
+; Line with overflow or too few lines to copy
+; Get matching pattern for Y value
 
 Bar2:   mov     si, [BY1]
         and     si, 7
-        mov     ah, [FillPattern + si]  ; Soll-Pattern in ah, si = Y mod 8
+        mov     ah, [FillPattern + si]  ; Desired pattern in ah, si = Y mod 8
         mov     cx, [BX1]               ; = BX1 mod 8
-        rol     ah, cl                  ; Ersten Punkt korrekt einstellen
+        rol     ah, cl                  ; Set first point correctly
 
-; Anzahl Punkte holen (neu weil cx zerstîrt worden ist)
+; Get number of points (new because cx was destroyed)
 
-        mov     cx, [BW]                ; Breite des Rechtecks = Anzahl Punkte
+        mov     cx, [BW]                ; Width of rectangle = number of points
 
-; Los geht's
-; Muster testen (Even fÅr Optimierung)
+; Here we go
+; Test pattern (Even for optimization)
 
 Even
-Bar5:   rol     ah, 1                   ; Punkt setzen ?
-        jc      Bar3                    ; Ja
+Bar5:   rol     ah, 1                   ; Set point?
+        jc      Bar3                    ; Yes
         mov     [Byte es:di], bl        ; BkColor
-        inc     di                      ; NÑchste Adresse
-        jz      Bar6                    ; öberlauf korrigieren
-Bar7:   LOOPCX  Bar5                    ; NÑchster Punkt
-        jmp     Bar4                    ; NÑchste Linie
+        inc     di                      ; Next address
+        jz      Bar6                    ; Correct overflow
+Bar7:   LOOPCX  Bar5                    ; Next point
+        jmp     Bar4                    ; Next line
 
-; Hierher wenn Punkt gesetzt wird
+; Here if point is set
 
 Even
-Bar3:   mov     [es:di], bh             ; Punkt in FÅllfarbe setzen
-        inc     di                      ; NÑchsten Punkt adressieren
-        jz      Bar8                    ; öberlauf korigieren
-Bar9:   LOOPCX  Bar5                    ; NÑchster Punkt
-        jmp     Bar4                    ; NÑchste Linie
+Bar3:   mov     [es:di], bh             ; Set point in fill color
+        inc     di                      ; Address next point
+        jz      Bar8                    ; Correct overflow
+Bar9:   LOOPCX  Bar5                    ; Next point
+        jmp     Bar4                    ; Next line
 
-; Hier Einsprung bei Segment-öberlÑufen
+; Here entry for segment overflows
 
 Bar6:   inc     [Seg64]
         call    [SegSelect]
@@ -2453,55 +2449,55 @@ Bar8:   inc     [Seg64]
         jmp     Bar9
 
 ; -------------------------------------------------------------
-; Spezialfall fÅr schnelles FÅllen: Kein Muster vorhanden.
-; Registerbelegung:
-;   AL  = Farbe
-;   DI  = Offset im Videosegment
-;   ES  = Videosegment
+; Special case for fast filling: No pattern present.
+; Register usage:
+;   AL  = color
+;   DI  = offset in video segment
+;   ES  = video segment
 
 PatBar1:
-        mov     si, [BHe]               ; Hîhe des Rechtecks
-        mov     bx, [Diff]              ; Wert fÅr öberlauf von X2+1 --> X1
-        mov     ah, al                  ; Farbe auch in ah
-        mov     bp, [BW]                ; Ab hier keine lokalen Variablen mehr
+        mov     si, [BHe]               ; Height of rectangle
+        mov     bx, [Diff]              ; Value for overflow from X2+1 --> X1
+        mov     ah, al                  ; Color also in ah
+        mov     bp, [BW]                ; No more local variables from here
 
-PB1:    mov     cx, bp                  ; Breite des Rechtecks
+PB1:    mov     cx, bp                  ; Width of rectangle
 
-; Testen ob innerhalb der Zeile ein Segment-öberlauf auftreten kann
+; Test if a segment overflow can occur within the line
 
-        mov     dx, di                  ; Adress-Offset
-        add     dx, cx                  ; + zu setzende Pixel
-        jc      PB2                     ; öberlauf in der Zeile
+        mov     dx, di                  ; Address offset
+        add     dx, cx                  ; + pixels to set
+        jc      PB2                     ; Overflow in the line
 
-; Zeile ist ohne öberlauf
+; Line is without overflow
 
-        test    di, 1                   ; Adresse ungerade ?
-        jz      PB4                     ; Nein
-        stosb                           ; Punkt setzen
-        loopz	PB5						; Breite war 1
+        test    di, 1                   ; Address odd?
+        jz      PB4                     ; No
+        stosb                           ; Set point
+        loopz	PB5						; Width was 1
 
 PB4:    RepStoS		                    ; / 2
-										; Worte setzen bis cx = 0
-										; War noch ein Carry ?
-										; öbriges Byte falls cx <> 0
+										; Set words until cx = 0
+										; Was there still a carry?
+										; Remaining byte if cx <> 0
 
-; Neue Zeile
+; New line
 
-PB5:    dec     si                      ; Noch eine Zeile ?
-        jz      PatBarEnd               ; Nein, Ende
+PB5:    dec     si                      ; Another line?
+        jz      PatBarEnd               ; No, end
         add     di, bx                  ; bx = [Diff]
         jnc     PB1
-        inc     [Seg64]                 ; öberlauf
-        call    [SegSelect]             ; Neues Segment einstellen
+        inc     [Seg64]                 ; Overflow
+        call    [SegSelect]             ; Set new segment
         jmp     PB1
 
-; Innerhalb der Zeile ist ein Segment-öberlauf
+; Segment overflow within the line
 
-PB2:    mov     [es:di], al             ; Pixel setzen
+PB2:    mov     [es:di], al             ; Set pixel
         inc     di
-        jnz     PB3                     ; kein Segment-öberlauf
-        inc     [Seg64]                 ; öberlauf
-        call    [SegSelect]             ; und Segment einstellen
+        jnz     PB3                     ; No segment overflow
+        inc     [Seg64]                 ; Overflow
+        call    [SegSelect]             ; And set segment
 PB3:    LOOPCX  PB2
         jmp     PB5
 
@@ -2533,61 +2529,60 @@ ENDP    PatBar
 
 ; ---------------------------------------------------------------------------
 ;
-; Plotten der Punkte (Y/X0-X) und (Y/X0+X). Der Y-Wert liegt definitiv im
-; Fenster und befindet sich in ax. Aufgrund des Tricks in der aufrufenden
-; Routine ist X1 (di) immer positiv, die Adress-Berechnung verlÑuft also ganz
-; normal.
+; Plotting the points (Y/X0-X) and (Y/X0+X). The Y value is definitely in
+; the window and is in ax. Due to the trick in the calling routine, X1 (di)
+; is always positive, so the address calculation proceeds as normal.
 ;
-; Registerbelegung:
+; Register usage:
 ;    ax  = Y
 ;    di  = X1
 ;    si  = DeltaX   (X2 - X1)
-;    cl  = Flags, Bit0 = X1 setzen, Bit1 = X2 setzen
+;    cl  = Flags, Bit0 = set X1, Bit1 = set X2
 ;
 
 PROC    Plot2   Near
 
-        add     ax, [PageOfs]           ; Korrektur fÅr Bildschirmseite
+        add     ax, [PageOfs]           ; Correction for screen page
         mul     [MaxX]
-        add     di, ax                  ; Offset im Videosegment
-        adc     dl, 0                   ; öberlauf
-        cmp     dl, [Seg64]             ; stimmt das Segment schon ?
-        jz      @@L1                    ; Ja
-        mov     [Seg64], dl             ; Nein: Merken...
-        call    [SegSelect]             ; ...und Setzen
-@@L1:   mov     al, [DrawingColor]      ; Farbe holen
-        test    cl, 01h                 ; Diesen Punkt plotten ?
-        jz      @@L2                    ; Nein
-        mov     [es:di], al             ; Ja: Punkt setzen
-@@L2:   test    cl, 02h                 ; Den zweiten Punkt plotten ?
-        jz      @@L4                    ; Nein
+        add     di, ax                  ; Offset in video segment
+        adc     dl, 0                   ; Overflow
+        cmp     dl, [Seg64]             ; Is the segment already correct?
+        jz      @@L1                    ; Yes
+        mov     [Seg64], dl             ; No: remember...
+        call    [SegSelect]             ; ...and set
+@@L1:   mov     al, [DrawingColor]      ; Get color
+        test    cl, 01h                 ; Plot this point?
+        jz      @@L2                    ; No
+        mov     [es:di], al             ; Yes: set point
+@@L2:   test    cl, 02h                 ; Plot the second point?
+        jz      @@L4                    ; No
 
-; Den zweiten Punkt plotten
+; Plot the second point
 
         add     di, si                  ; + DeltaX
-        jc      @@L3                    ; Segment-öberlauf
-        stosb                           ; Punkt setzen
+        jc      @@L3                    ; Segment overflow
+        stosb                           ; Set point
         ret
 
-; Segment-öberlauf korrigieren
+; Correct segment overflow
 
-@@L3:   inc     [Seg64]                 ; Segment-öberlauf berÅcksichtigen
-        call    [SegSelect]             ; Segment setzen
-        stosb                           ; Punkt setzen
+@@L3:   inc     [Seg64]                 ; Consider segment overflow
+        call    [SegSelect]             ; Set segment
+        stosb                           ; Set point
 
-; Und Ende
+; And done
 
 @@L4:   ret
 
 ENDP    Plot2
 
 ; -------------------------------------------------------------------
-; Unterprogramm fÅr Ellipse zum Setzen des 4-fach gespiegelten Punktes mit
-; 1 Pixel Durchmesser.
+; Subroutine for ellipse to set the 4-way mirrored point with
+; 1 pixel diameter.
 ; cx = x, bx = y, ds = DSeg, es = VideoSeg
-; ds, es und bp mÅssen bleiben alles andere darf zerstîrt werden.
-; In [Seg64] wird das momentan eingestellte Segment erwartet - die Variable ist
-; vor Start auf 0ffh zu initialisieren.
+; ds, es and bp must be preserved, everything else may be destroyed.
+; [Seg64] is expected to contain the currently set segment - the variable
+; must be initialized to 0ffh before start.
 ;
 
 PROC    EPlot4Thin   Near
@@ -2595,7 +2590,7 @@ Local   X1: WORD = LocalSize
 
         EnterProc       LocalSize
 
-; X-Werte berechnen und gegen die Clipping-Fenstergrenzen prÅfen
+; Calculate X values and check against the clipping window boundaries
 
         mov     di, [CursorX]
         sub     di, cx                  ; X1
@@ -2606,63 +2601,62 @@ Local   X1: WORD = LocalSize
         add     ax, cx                  ; X2
 
         xor     cx, cx                  ; Flags = 0
-        cmp     di, [Clip_X1]           ; Linker Punkt links innerhalb ?
-        jl      @@L1                    ; Nein
-        cmp     di, [Clip_X2]           ; Linker Punkt rechts innerhalb ?
-        jg      @@L1                    ; Nein
-        or      cl, 1                   ; Bit fÅr linken Punkt setzen
-@@L1:   cmp     ax, [Clip_X1]           ; Rechter Punkt links innerhalb ?
-        jl      @@L2                    ; Nein
-        cmp     ax, [Clip_X2]           ; Rechter Punkt rechts innerhalb ?
-        jg      @@L2                    ; Nein
-        or      cl, 02h                 ; Bit fÅr rechten Punkt setzen
-@@L2:   jcxz    @@L5                    ; Beide Bits 0 --> keine Punkte
+        cmp     di, [Clip_X1]           ; Left point inside left?
+        jl      @@L1                    ; No
+        cmp     di, [Clip_X2]           ; Left point inside right?
+        jg      @@L1                    ; No
+        or      cl, 1                   ; Set bit for left point
+@@L1:   cmp     ax, [Clip_X1]           ; Right point inside left?
+        jl      @@L2                    ; No
+        cmp     ax, [Clip_X2]           ; Right point inside right?
+        jg      @@L2                    ; No
+        or      cl, 02h                 ; Set bit for right point
+@@L2:   jcxz    @@L5                    ; Both bits 0 --> no points
 
-; Hier kommt ein etwas "ausgefuchster" Trick: bei negativen X1 wird der linke
-; Punkt nicht gezeichnet, da die Plot-Routine aber X1 als vorzeichenlosen
-; (und daher dann sehr gro·en) Wert betrachtet und dann durcheinanderkommt,
-; wird hier folgender Weg beschritten: X1 wird auf 0 gesetzt und DeltaX wird
-; um den Betrag den X1 damit vergrî·ert wurde, vermindert. Damit wird X2
-; korrekt geplottet und die Adress-Berechnung stimmt ohne 10-zeilige
-; Assembler KlimmzÅge in der innersten Schleife.
+; Here comes a somewhat "sly" trick: for negative X1, the left point is not
+; drawn, but since the plot routine treats X1 as unsigned (and thus very
+; large) and gets confused, the following approach is taken: X1 is set to 0
+; and DeltaX is reduced by the amount X1 was increased. This way, X2 is
+; plotted correctly and the address calculation is correct without a
+; 10-line assembler acrobatics in the innermost loop.
 
-        test    di, di                  ; Ist di negativ ?
-        jns     @@L3                    ; Nein
-        add     si, di                  ; si = DeltaX vermindern
+        test    di, di                  ; Is di negative?
+        jns     @@L3                    ; No
+        add     si, di                  ; si = reduce DeltaX
         xor     di, di                  ; X1 = 0
-        mov     [X1], di                ; und speichern
+        mov     [X1], di                ; and store
 
-; Y-Wert der oberen beiden Punkte berechnen, prÅfen, ob diese Punkte im Fenster
-; liegen
+; Calculate Y value of the upper two points, check if these points are in
+; the window
 
 @@L3:   mov     ax, [CursorY]           ; Y0
         sub     ax, bx                  ; -Y
-        cmp     ax, [Clip_Y2]           ; Y1 unterhalb des Fensters ?
-        jg      @@L5                    ; --> Keiner der Punkte wird geplottet
-        cmp     ax, [Clip_Y1]           ; Y1 oberhalb des Fensters ?
-        jl      @@L4                    ; --> Punkt wird nicht geplottet
+        cmp     ax, [Clip_Y2]           ; Y1 below the window?
+        jg      @@L5                    ; --> None of the points will be plotted
+        cmp     ax, [Clip_Y1]           ; Y1 above the window?
+        jl      @@L4                    ; --> Point will not be plotted
 
-; Aufruf der Plot-Funktion. ax = Y, cl = Flags, di = X1, si = DeltaX
-; Zerstîrt ax, di
+; Call the plot function. ax = Y, cl = Flags, di = X1, si = DeltaX
+; Destroys ax, di
 
         call    Plot2
 
-; NÑchsten Punkt rechnen
+; Calculate next point
 
 @@L4:   mov     ax, [CursorY]
         add     ax, bx                  ; Y
-        cmp     ax, [Clip_Y2]           ; Unterhalb ?
-        jg      @@L5                    ; Ja --> Fertig
-        cmp     ax, [Clip_Y1]           ; Oberhalb ?
-        jl      @@L5                    ; Ja --> Fertig
+        cmp     ax, [Clip_Y2]           ; Below?
+        jg      @@L5                    ; Yes --> Done
+        cmp     ax, [Clip_Y1]           ; Above?
+        jl      @@L5                    ; Yes --> Done
 
-; Aufruf der Plot-Funktion. ax = Y, cl = Flags, di = X1, si = DeltaX
-; Zerstîrt ax, di
+; Call the plot function. ax = Y, cl = Flags, di = X1, si = DeltaX
+; Destroys ax, di
 
         mov     di, [X1]
         call    Plot2
 
-; Fertig !
+; Done!
 
 @@L5:
         LeaveProc
@@ -2672,12 +2666,12 @@ ENDP    EPlot4Thin
 
 
 ; -------------------------------------------------------------------
-; Unterprogramm fÅr Ellipse zum Setzen des 4-fach gespiegelten Punktes mit
-; 3 Pixel Durchmesser.
+; Subroutine for ellipse to set the 4-way mirrored point with
+; 3 pixel diameter.
 ; cx = x, bx = y, ds = DSeg, es = VideoSeg
-; ds, es und bp mÅssen bleiben alles andere darf zerstîrt werden.
-; In [Seg64] wird das momentan eingestellte Segment erwartet - die Variable ist
-; vor Start auf 0ffh zu initialisieren.
+; ds, es and bp must be preserved, everything else may be destroyed.
+; [Seg64] is expected to contain the currently set segment - the variable
+; must be initialized to 0ffh before start.
 ;
 
 PROC    EPlot4Thick Near
@@ -2688,7 +2682,7 @@ Local   X: WORD, Y: WORD = LocalSize
         mov     [X], cx
         mov     [Y], bx
 
-; 5 mal EPlot4Thin aufrufen
+; Call EPlot4Thin 5 times
 
         dec     bx
         js      @@L1
@@ -2710,7 +2704,7 @@ Local   X: WORD, Y: WORD = LocalSize
         inc     bx
         call    EPlot4Thin              ; X/Y+1
 
-; Ende
+; End
 
         LeaveProc
         ret
@@ -2718,9 +2712,9 @@ Local   X: WORD, Y: WORD = LocalSize
 ENDP    EPlot4Thick
 
 ; ----------------------------------------------------------------
-; Zeichnen einer (vollen) Ellipse. Verwendet wird der Midpoint-Algorithmus
-; aus "Computer Graphics" S. 90  (88ff) aber mit second order differences und
-; Zusammenfassung von Faktoren etc.
+; Drawing a (full) ellipse. The midpoint algorithm from "Computer Graphics"
+; p. 90 (88ff) is used, but with second order differences and
+; consolidation of factors, etc.
 ;
 ; PROCEDURE Ellipse (X0, Y0, A, B);
 ;
@@ -2783,7 +2777,7 @@ ENDP    EPlot4Thick
 ; END;
 ;
 
-; Eintritt mit: cx = X-Radius (A), dx = Y-Radius (B)
+; Entry with: cx = X radius (A), dx = Y radius (B)
 
 
 PROC    Ellipse   Near
@@ -2791,7 +2785,7 @@ PROC    Ellipse   Near
 Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
       QB2: DWORD, DeltaX: DWORD, DeltaY: DWORD, R1: DWORD = LocalBytes
 
-; PrÅfen, ob einer der beiden Radien <= 0 ist. Wenn ja, direkt Ende
+; Check if either radius <= 0. If so, exit immediately
 
         test    cx, cx
         jle     @@N1
@@ -2799,12 +2793,12 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
         jg      @@N2
 @@N1:   ret
 
-; Stackframe aufbauen
+; Set up stack frame
 
 @@N2:   mov     bp, sp
         sub     sp, LocalBytes
 
-; Variable initialisieren
+; Initialize variables
 
         mov     [X], 0
         mov     [Y], dx                 ; dx = B
@@ -2837,11 +2831,11 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
 
         mov     bx, [Y]
         dec     bx                      ; bx = Y - 1
-        mov     cx, dx                  ; high word von QA2 retten
+        mov     cx, dx                  ; save high word of QA2
         mul     bx
-        mov     di, ax                  ; low word bereits fertig
-        mov     si, dx                  ; high word retten
-        mov     ax, cx                  ; high word von QA2
+        mov     di, ax                  ; low word already done
+        mov     si, dx                  ; save high word
+        mov     ax, cx                  ; high word of QA2
         mul     bx
         add     ax, si
         not     di
@@ -2897,15 +2891,15 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
         mov     [WORD low R1], bx
         mov     [WORD high R1], ax
 
-; Sonstiger Kleinkruscht
+; Other small stuff
 
         mov     es, [VideoSeg]
-        mov     [Seg64], 0FFh           ; Flag fÅr "kein Segment gesetzt"
+        mov     [Seg64], 0FFh           ; Flag for "no segment set"
         mov     cx, [X]
         mov     bx, [Y]
         call    [PlotVector]
 
-; Pfuizz ! Initialisierung fertig, es kommt die Schleife
+; Phew! Initialization done, now comes the loop
 ; WHILE (R1 > 0) DO BEGIN
 
 @@L1:   xor     ax, ax                  ; ax = 0
@@ -2924,7 +2918,7 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
         cmp     [WORD low Diff], ax
         jb      @@L4
 
-; Diff ist >= 0
+; Diff is >= 0
 
 @@L3:   mov     ax, [WORD low DeltaY]
         mov     dx, [WORD high DeltaY]
@@ -2943,7 +2937,7 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
         sub     [WORD low R1], ax
         sbb     [WORD high R1], dx      ; Dec (R1, QA);
 
-; Was sonst noch in der ersten Region ausgefÅhrt werden mu·
+; What else must be done in the first region
 
 @@L4:   mov     ax, [WORD low DeltaX]
         mov     dx, [WORD high DeltaX]
@@ -2962,27 +2956,27 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
         sub     [WORD low R1], ax
         sbb     [WORD high R1], dx      ; Dec (R1, QB);
 
-; Punkt setzen und neu
+; Set point and repeat
 
         mov     cx, [X]
         mov     bx, [Y]
         call    [PlotVector]
         jmp     @@L1
 
-; Zweite Region: Initialisierungen
+; Second region: initializations
 ;   Diff := (QB * (LONGINT (X + 1) * LONGINT (X) - QA) + (QB DIV 4)) +
 ;           (SQR (LONGINT (Y - 1)) * QA);
 ;
 
 @@L5:   mov     ax, [X]
         inc     ax
-        mul     [X]                     ; X ist immer positiv, QB auch
+        mul     [X]                     ; X is always positive, QB too
         sub     ax, [WORD low QA]
         sbb     dx, [WORD high QA]      ; - QA
         mov     di, ax
         mov     si, dx                  ; X * (X+1) - QA in di:si
         mul     [WORD high QB]
-        mov     cx, ax                  ; Zwischenergebnis in bx:cx
+        mov     cx, ax                  ; Intermediate result in bx:cx
         mov     ax, di
         mul     [WORD low QB]
         mov     bx, ax
@@ -3001,12 +2995,12 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
         adc     cx, dx                  ; + (QB DIV 4)
 
         mov     ax, [Y]
-        dec     ax                      ; Y-1 (ist immer positiv)
+        dec     ax                      ; Y-1 (always positive)
         mul     ax                      ; ax * ax
         mov     di, ax
         mov     si, dx
         mul     [WORD high QA]
-        add     cx, ax                  ; Zwischenergebnis in bx:cx
+        add     cx, ax                  ; Intermediate result in bx:cx
         mov     ax, di
         mul     [WORD low QA]
         add     bx, ax
@@ -3021,7 +3015,7 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
 ;   DeltaX := QB2 * LONGINT (X + 1);
 
         mov     bx, [X]
-        inc     bx                      ; X+1 ist immer positiv
+        inc     bx                      ; X+1 always positive
         mov     ax, [WORD low QB2]
         mul     bx
         mov     [WORD low DeltaX], ax
@@ -3049,7 +3043,7 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
         mov     [WORD low DeltaY], bx
         mov     [WORD high DeltaY], ax
 
-; Gargl ! Aber jetzt geht's los ...
+; Gargl! But now it starts...
 
 @@L6:   xor     ax, ax
         cmp     [Y], ax
@@ -3064,7 +3058,7 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
         jnb     @@L8
 @@L7:
 
-; Diff ist < 0
+; Diff is < 0
 
         mov     ax, [WORD low DeltaX]
         mov     dx, [WORD high DeltaX]
@@ -3078,7 +3072,7 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
 
         inc     [X]
 
-; Und der Rest der Schleife
+; And the rest of the loop
 
 @@L8:   mov     ax, [WORD low DeltaY]
         mov     dx, [WORD high DeltaY]
@@ -3092,49 +3086,50 @@ Local X: WORD, Y: WORD, Diff: DWORD, QA: DWORD, QB: DWORD, QA2: DWORD, \
 
         dec     [Y]
 
-; Punkt setzen und neu
+; Set point and repeat
 
         mov     cx, [X]
         mov     bx, [Y]
         call    [PlotVector]
         jmp     @@L6
 
-; Ende
+; End
 
 @@L9:   mov     sp, bp
         ret
 
 ENDP    Ellipse
 
+
 ; ---------------------------------------------------------------------------
-; Hauptprogramm fÅr Ellipse. Wird Åber den Dispatcher aufgerufen.
+; Main program for ellipse. Called via the dispatcher.
 
 PROC    Arc     NEAR
 
-; Warten bis die GE bereit ist
+; Wait until the GE is ready
 
-        call    [GE_Ready]              ; Warten bis GE bereit
+        call    [GE_Ready]              ; Wait until GE is ready
 
-; PrÅfen ob es sich um eine 360¯ Ellipse handelt
+; Check if it is a 360¬∞ ellipse
 
-        test    ax, ax                  ; Startwinkel = 0 ?
-        jnz     @@L2                    ; Nein
-        cmp     bx, 360                 ; Endwinkel = 360 ?
-        jnz     @@L2                    ; Nein
+        test    ax, ax                  ; Start angle = 0?
+        jnz     @@L2                    ; No
+        cmp     bx, 360                 ; End angle = 360?
+        jnz     @@L2                    ; No
 
-; Es handelt sich um eine 360 Grad-Ellipse.  Liniendicke prÅfen und
-; entsprechenden Zeichenvektor zuweisen
+; It is a 360 degree ellipse. Check line thickness and
+; assign appropriate drawing vector
 
         mov     [PlotVector], OFFSET EPlot4Thin
-        cmp     [LineWidth], 3          ; Dicke Linien ?
-        jnz     @@L1                    ; Nein, dÅnne
+        cmp     [LineWidth], 3          ; Thick lines?
+        jnz     @@L1                    ; No, thin
         mov     [PlotVector], OFFSET EPlot4Thick
 
-@@L1:   jmp     Ellipse                 ; Nein --> Ellipse
+@@L1:   jmp     Ellipse                 ; No --> Ellipse
 
-; Es handelt sich um keine 360¯-Ellipse. Emulate aufrufen
+; It is not a 360¬∞ ellipse. Call Emulate
 
-@@L2:   call    Emulate                 ; Ellipse emulieren
+@@L2:   call    Emulate                 ; Emulate ellipse
         ret
 
 ENDP    Arc
@@ -3167,28 +3162,28 @@ ENDP    Arc
 
 PROC    PieSlice Near
 
-; Warten bis die GE bereit ist
+; Wait until the GE is ready
 
-        call    [GE_Ready]              ; Warten bis GE bereit
+        call    [GE_Ready]              ; Wait until GE is ready
 
-; PrÅfen ob es sich um eine 360¯ Ellipse handelt
+; Check if it is a 360¬∞ ellipse
 
-        test    ax, ax                  ; Startwinkel = 0 ?
-        jnz     @@L2                    ; Nein
-        cmp     bx, 360                 ; Endwinkel = 360 ?
-        jnz     @@L2                    ; Nein
+        test    ax, ax                  ; Start angle = 0?
+        jnz     @@L2                    ; No
+        cmp     bx, 360                 ; End angle = 360?
+        jnz     @@L2                    ; No
 
-; Der Plot-Routine von Ellipse einen passenden Wert zuweisen
+; Assign a suitable value to the plot routine of Ellipse
 
         mov     [PlotVector], OFFSET FullEllipsePlot
 
-; Ellipse-Prozedur aufrufen
+; Call Ellipse procedure
 
         jmp     Ellipse
 
-; Es handelt sich um keine 360¯-Ellipse. Emulate aufrufen
+; It is not a 360¬∞ ellipse. Call Emulate
 
-@@L2:   call    Emulate                 ; Ellipse emulieren
+@@L2:   call    Emulate                 ; Emulate ellipse
         ret
 
 ENDP    PieSlice
@@ -3212,155 +3207,152 @@ ENDP    PieSlice
 ;
 
 ; -------------------------------------------------------------------------
-; Ziehen einer horizontalen Linie im aktuellen FÅllmuster ohne Clipping
+; Draw a horizontal line in the current fill pattern without clipping
 ;
-; Unterprogramm fÅr FullEllipsePlot und FillPoly. Wird aufgerufen mit ax = Y,
+; Subroutine for FullEllipsePlot and FillPoly. Called with ax = Y,
 ; bx = X1, cx = X2, es = VideoSegment.
 ;
-; Frei verwendet werden dÅrfen ax, bx, cx, dx, si, di
-; Ihre Werte behalten mÅssen es, ds, bp, ss, cs
+; ax, bx, cx, dx, si, di may be used freely
+; The values that must be preserved: es, ds, bp, ss, cs
 
 PROC    Generic_HorLine Near
 
         cld
-        mov     si, ax                  ; Y-Wert fÅr Muster
+        mov     si, ax                  ; Y value for pattern
         and     si, 7                   ; mod 8
 
-; Adresse berechnen
+; Calculate address
 
-        CalcAdr                         ; Adresse berechnen
-        xchg    di, ax                  ; Offset nach di
+        CalcAdr                         ; Calculate address
+        xchg    di, ax                  ; Offset to di
 
-; Farbe holen
+; Get color
 
         mov     al, [FillColor]
 
-; Das passende Pattern nach ah holen
+; Get the appropriate pattern into ah
 
         mov     ah, [FillPattern + si]
 
-; Testen, ob das Muster 0FFh (alles farbig) oder 00h (alles Hintergrund) ist.
-; Falls ja --> Sonderbehandlung mit rep stosb
+; Test if the pattern is 0FFh (all colored) or 00h (all background).
+; If so --> special handling with rep stosb
 
-        cmp     ah, 0FFh                ; Alles farbig ?
+        cmp     ah, 0FFh                ; All colored?
         jz      EPL_Solid
-        test    ah, ah                   ; Alles Hintergrund ?
-        jnz     EPL_Pattern             ; Nein, Muster
-        xor     al, al                   ; Hintergrundfarbe holen
+        test    ah, ah                  ; All background?
+        jnz     EPL_Pattern             ; No, pattern
+        xor     al, al                  ; Get background color
 
-; Die Linie wird in einer Farbe gezogen. Hier geht's mit rep stosb erheblich
-; schneller.
-; Anzahl nach cx und prÅfen, ob innerhalb der Linie ein Segment-öberlauf
-; stattfindet.
+; The line is drawn in one color. Here, rep stosb is much faster.
+; Move count to cx and check if a segment overflow occurs within the line.
 
 EPL_Solid:
-        mov     ah, al                  ; Farbe in ah und al
+        mov     ah, al                  ; Color in ah and al
         sub     cx, bx
         inc     cx
-        jz      @@L9                    ; LÑnge ist 0
+        jz      @@L9                    ; Length is 0
         mov     bx, di
         add     bx, cx
-        jnc     @@L2                    ; Kein öberlauf
+        jnc     @@L2                    ; No overflow
 
-; Es findet ein öberlauf statt. Die Linie in zwei Teilen zeichnen
+; An overflow occurs. Draw the line in two parts
 
         mov     bx, di
-        neg     bx                      ; Anzahl bis öberlauf
-        sub     cx, bx                  ; In cx der Rest danach
+        neg     bx                      ; Count until overflow
+        sub     cx, bx                  ; In cx the rest after
         xchg    bx, cx
 
-; Ersten Teil zeichnen
+; Draw first part
 
 		RepStoS
 
-; NÑchstes Segment setzen
+; Set next segment
 
-        inc     [Seg64]                 ; NÑchstes Segment...
-        call    [SegSelect]             ; ...setzen
-        mov     cx, bx                  ; Restliche Anzahl
+        inc     [Seg64]                 ; Next segment...
+        call    [SegSelect]             ; ...set
+        mov     cx, bx                  ; Remaining count
 
-; Falls die restliche Anzahl 0 ist passiert hier nix, weil rep dann 0 mal
-; ausgefÅhrt wird (ganz im Gegensatz zu weiter unten, loop wird nÑmlich dann
-; 65536 mal ausgefÅhrt ... wie wir sie lieben, die Welt der Kompatiblen).
+; If the remaining count is 0, nothing happens here, because rep is then
+; executed 0 times (unlike below, where loop would execute 65536 times ...
+; how we love the world of compatibles).
 
-; Den zweiten (bzw. einzigen) Teil der Linie zeichnen
+; Draw the second (or only) part of the line
 
 @@L2:   RepStoS
 
-; Fertig !
+; Done!
 
         ret
 
-; Es wird mit einem Muster gefÅllt. Das Muster befindet sich in ah und mu·
-; fÅr die Startkoordinate passend gemacht werden.
+; Filled with a pattern. The pattern is in ah and must be adjusted for the
+; starting coordinate.
 
 EPL_Pattern:
         xchg    bx, cx                  ; cx = X1, bx = X2
-        rol     ah, cl                  ; Anfangswert (rol ist immer mod xx)
+        rol     ah, cl                  ; Initial value (rol is always mod xx)
         xchg    bx, cx                  ; cx = X2, bx = X1
 
-; Anzahl nach cx und prÅfen, ob innerhalb der Linie ein Segment-öberlauf
-; stattfindet.
+; Move count to cx and check if a segment overflow occurs within the line.
 
         sub     cx, bx
         inc     cx
         mov     bx, di
         add     bx, cx
-        jnc     @@L6                    ; Kein öberlauf
+        jnc     @@L6                    ; No overflow
 
-; Es findet ein öberlauf statt. Die Linie in zwei Teilen zeichnen
+; An overflow occurs. Draw the line in two parts
 
         mov     bx, di
-        neg     bx                      ; Anzahl bis öberlauf
-        sub     cx, bx                  ; In cx der Rest danach
+        neg     bx                      ; Count until overflow
+        sub     cx, bx                  ; In cx the rest after
         xchg    bx, cx
 
 EVEN
 @@L3:   rol     ah, 1
         jnc     @@L4
-        stosb                           ; Pixel in Farbe setzen
+        stosb                           ; Set pixel in color
         LOOPCX  @@L3
         jmp     short @@L5
 
 EVEN
-@@L4:   mov     [Byte es:di], 0         ; Pixel in Hintergrundfarbe fÅllen
+@@L4:   mov     [Byte es:di], 0         ; Fill pixel with background color
         inc     di
         LOOPCX  @@L3
 @@L5:
 
-        inc     [Seg64]                 ; NÑchstes Segment...
-        call    [SegSelect]             ; ...setzen
-        mov     cx, bx                  ; Restliche Anzahl
+        inc     [Seg64]                 ; Next segment...
+        call    [SegSelect]             ; ...set
+        mov     cx, bx                  ; Remaining count
 
-; Den zweiten (einzigen) Teil der Linie zeichnen.
+; Draw the second (only) part of the line.
 
-@@L6:   jcxz    @@L9                    ; Nichts zu zeichnen
+@@L6:   jcxz    @@L9                    ; Nothing to draw
 
 EVEN
 @@L7:   rol     ah, 1
         jnc     @@L8
-        stosb                           ; Pixel in Farbe setzen
+        stosb                           ; Set pixel in color
         LOOPCX  @@L7
         jmp     short @@L9
 
 EVEN
-@@L8:   mov     [Byte es:di], 0         ; Pixel in Hintergrundfarbe fÅllen
+@@L8:   mov     [Byte es:di], 0         ; Fill pixel with background color
         inc     di
         LOOPCX  @@L7
 
-; Das war's
+; That's it
 
 @@L9:   ret
 
 ENDP    Generic_HorLine
 
 ; -------------------------------------------------------------------
-; Unterprogramm fÅr FilledEllipse zum Zeichnen der Ellipse.
+; Subroutine for FilledEllipse to draw the ellipse.
 ;
 ; cx = x, bx = y, ds = cs, es = VideoSeg
-; ds, es und bp mÅssen bleiben alles andere darf zerstîrt werden.
-; In [Seg64] wird das momentan eingestellte Segment erwartet - die Variable ist
-; vor Start auf 0ffh zu initialisieren.
+; ds, es and bp must be preserved, everything else may be destroyed.
+; [Seg64] is expected to contain the currently set segment - the variable
+; must be initialized to 0ffh before start.
 ;
 
 PROC    FullEllipsePlot NEAR
@@ -3368,71 +3360,71 @@ Local   Y:WORD, X1: WORD, X2: WORD = LocalSize
 
         EnterProc       LocalSize
 
-; Horizontale Linie initialisieren
+; Initialize horizontal line
 
         call    [HorLineInit]
 
-; öbergebenen Y-Wert merken
+; Remember the passed Y value
 
         mov     [Y], bx
 
-; X1 und X2 rechnen und entsprechend korrigieren
+; Calculate X1 and X2 and correct as needed
 
         mov     ax, cx
         neg     cx
         add     cx, [CursorX]           ; cx = X1
         add     ax, [CursorX]           ; ax = X2
 
-        mov     dx, [Clip_X1]           ; Ecke links ins Register
-        cmp     ax, dx                  ; Rechte Ecke links au·erhalb ?
-        jl      @@L9                    ; Ja --> Garnichts zeichnen
-        cmp     cx, dx                  ; Linke Ecke links au·erhalb ?
-        jge     @@L1                    ; Nein
-        mov     cx, dx                  ; Ja --> X1 auf linke Ecke korrigieren
-@@L1:   mov     dx, [Clip_X2]           ; Ecke rechts ins Register
-        cmp     cx, dx                  ; linke Ecke rechts au·erhalb ?
-        jg      @@L9                    ; Ja --> Garnichts zu zeichnen
-        cmp     ax, dx                  ; Rechte Ecke rechts au·erhalb ?
-        jle     @@L2                    ; Nein
-        mov     ax, dx                  ; Ja --> X2 auf rechte Ecke korrigieren
+        mov     dx, [Clip_X1]           ; Left corner into register
+        cmp     ax, dx                  ; Right corner left outside?
+        jl      @@L9                    ; Yes --> draw nothing
+        cmp     cx, dx                  ; Left corner left outside?
+        jge     @@L1                    ; No
+        mov     cx, dx                  ; Yes --> correct X1 to left corner
+@@L1:   mov     dx, [Clip_X2]           ; Right corner into register
+        cmp     cx, dx                  ; Left corner right outside?
+        jg      @@L9                    ; Yes --> nothing to draw
+        cmp     ax, dx                  ; Right corner right outside?
+        jle     @@L2                    ; No
+        mov     ax, dx                  ; Yes --> correct X2 to right corner
 @@L2:
 
-; Werte merken
+; Store values
 
         mov     [X1], cx
         mov     [X2], ax
 
-; Y-Wert der oberen Linie rechnen und sehen, ob er im Fenster liegt.
+; Calculate Y value of the upper line and check if it is in the window.
 
         neg     bx
         add     bx, [CursorY]           ; bx = Y0 - Y
-        cmp     bx, [Clip_Y2]           ; Unterhalb des Fensters ?
-        jg      @@L9                    ; Ja --> Garnichts zu zeichnen
-        cmp     bx, [Clip_Y1]           ; Im Fenster ?
-        jl      @@L5                    ; Nein --> Keine Linie
+        cmp     bx, [Clip_Y2]           ; Below the window?
+        jg      @@L9                    ; Yes --> draw nothing
+        cmp     bx, [Clip_Y1]           ; In the window?
+        jl      @@L5                    ; No --> no line
 
-; Die obere der beiden Linien liegt im Fenster, zeichnen
+; The upper of the two lines is in the window, draw
 
         xchg    bx, ax                  ; ax = Y, bx = X2
         xchg    bx, cx                  ; bx = X1, cx = X2
         call    [HorLine]
 
-; Y-Wert der unteren Linie rechnen und sehen, ob er im Fenster liegt
+; Calculate Y value of the lower line and check if it is in the window
 
 @@L5:   mov     ax, [Y]
         add     ax, [CursorY]
-        cmp     ax, [Clip_Y2]           ; Unterhalb des Fensters ?
-        jg      @@L9                    ; Ja --> keine Linie
-        cmp     ax, [Clip_Y1]           ; Oberhalb des Fensters ?
-        jl      @@L9                    ; Ja --> keine Linie
+        cmp     ax, [Clip_Y2]           ; Below the window?
+        jg      @@L9                    ; Yes --> no line
+        cmp     ax, [Clip_Y1]           ; Above the window?
+        jl      @@L9                    ; Yes --> no line
 
-; Die untere Linie Zeichnen
+; Draw the lower line
 
         mov     bx, [X1]
         mov     cx, [X2]
         call    [HorLine]
 
-; Fertig !
+; Done!
 
 @@L9:   LeaveProc
         ret
@@ -3442,26 +3434,26 @@ ENDP    FullEllipsePlot
 
 ; ----------------------------------------------------------------------
 ;
-; Unterprogramm zum Zeichnen einer gefÅllten Ellipse. Es wird Ellipse mit
-; einem entsprechenden Plot-Vektor verwendet.
+; Subroutine to draw a filled ellipse. Ellipse is used with an appropriate
+; plot vector.
 ;
 
 PROC    FilledEllipse  NEAR
 
-; Warten bis die GE bereit ist
+; Wait until the GE is ready
 
         call    [GE_Ready]
 
-; Umspeichern nach cx:dx, da DoEllipse die Radien dort erwartet
+; Store to cx:dx, as DoEllipse expects the radii there
 
         xchg    cx, ax
         xchg    dx, bx
 
-; Der Plot-Routine von Ellipse einen passenden Wert zuweisen
+; Assign a suitable value to the plot routine of Ellipse
 
         mov     [PlotVector], OFFSET FullEllipsePlot
 
-; Ellipse-Prozedur aufrufen
+; Call Ellipse procedure
 
         jmp     Ellipse
 
@@ -3482,18 +3474,18 @@ ENDIF
 ; Protected-Mode Variable
 
 IF Ver3
-; Die folgende Struktur _mu·_ zuallererst im Datensegment liegen !
+; The following structure _must_ be at the very beginning of the data segment!
 
-                db      4               ; Anzahl Segmente
+                db      4               ; Number of segments
                 dw      OFFSET Segs
-                db      1               ; Ein Int-Vektor wird benîtigt
+                db      1               ; One int vector is needed
                 dw      OFFSET Ints
-                db      1               ; Low-Mem Segmente
+                db      1               ; Low-mem segments
                 dw      LowSegs
-                db      0               ; Data nicht ins Low-Mem
+                db      0               ; Data not in low-mem
                 dw      0
 ENDIF
-ProtMode        db      0               ; Protected Mode wenn != 0
+ProtMode        db      0               ; Protected mode if != 0
 
 
 LABEL           Segs
@@ -3507,32 +3499,32 @@ LABEL           Ints
 Int1F           dd      1Fh
 
 LABEL           LowSegs
-                dw      16              ; Grî·e: 16 Paras (256 Bytes)
-LowBufSeg       dw      0               ; Real-Mode Segment
-LowBufSel       dw      0               ; Protected Mode Selector
+                dw      16              ; Size: 16 paras (256 bytes)
+LowBufSeg       dw      0               ; Real-mode segment
+LowBufSel       dw      0               ; Protected mode selector
 ELSE
 
-; Statischer Puffer im Low Memory fÅr Versionen vor 3.0
+; Static buffer in low memory for versions before 3.0
 LowBuf          db      256 dup (?)
 
 ENDIF
 
 ;---------------------------------------------------
-; Statische Struct zum Aufruf eines simulierten Real-Mode INTs
+; Static struct for calling a simulated real-mode INT
 
 IF Ver3
 RMRegs          RealModeRegs <>
 ENDIF
 
 ;---------------------------------------------------
-; Vektor-Tabelle
-; Bemerkung zur Tabelle: Nach c't 11/89, 9/90 und 2/91 enthÑlt der Vektor
-; 14 (0Eh) einen Einsprung fÅr den Scan-Konverter von FillPoly. Dieser Vektor
-; wird jedoch nicht eingetragen, da das Grafik-Kernel von BP 7.0 diesen
-; Vektor prÅft und wenn dieser nicht mehr auf Emulate zeigt, ein Flag setzt,
-; was zur Folge hat, das Arc und PieSlice mit kleinen Radien nicht mehr
-; korrekt arbeiten. Also steht der Vektor hier auf Emulate und wird spÑter
-; (bei Init) auf den Offset von FillPoly gesetzt.
+; Vector table
+; Note on the table: According to c't 11/89, 9/90 and 2/91, vector
+; 14 (0Eh) contains an entry point for the scan converter of FillPoly. This
+; vector is not entered, however, because the graphics kernel of BP 7.0
+; checks this vector and if it no longer points to Emulate, it sets a flag,
+; which causes Arc and PieSlice with small radii to no longer work
+; correctly. So the vector here is set to Emulate and is later (at Init)
+; set to the offset of FillPoly.
 ;
 
 LABEL   Vector_Table  WORD
@@ -3544,7 +3536,7 @@ LABEL   Vector_Table  WORD
         dw      Move
         dw      Draw
         dw      Vect
-        dw      Emulate                 ; FillPoly, s.o.
+        dw      Emulate                 ; FillPoly, see above
         dw      Emulate                 ; Bar = Emulate
         dw      PatBar
         dw      Arc
@@ -3571,45 +3563,44 @@ LABEL   Vector_Table  WORD
         dw      35 dup (NOP_Vector)      ; Reserved for Borland use
 
 ; -------------------------------------------------------
-; Hier kommen Vektoren, die intern verwendet werden.
+; Here come vectors that are used internally.
 
-SegSelect       dw      NOP_Vector      ; Vektor fÅr Segment-Umschaltung
-PlotVector      dw      EPlot4Thin      ; Zeichenvektor fÅr DoEllipse
-HorLine         dw      Generic_HorLine ; Horizontale Linie im aktuellen FÅllmuster
-HorLineInit     dw      NOP_Vector      ; Init fÅr HorLine
-GE_Ready        dw      NOP_Vector      ; Wartet bis die Hardware Engine fertig ist
+SegSelect       dw      NOP_Vector      ; Vector for segment switching
+PlotVector      dw      EPlot4Thin      ; Drawing vector for DoEllipse
+HorLine         dw      Generic_HorLine ; Horizontal line in current fill pattern
+HorLineInit     dw      NOP_Vector      ; Init for HorLine
+GE_Ready        dw      NOP_Vector      ; Waits until the hardware engine is ready
 
 ; ------------------------------------------------------------
-; BitMap-Utility Tabelle
+; BitMap utility table
 
 BitMapUtilTable:
-        dw      FAR_NOP_Vector          ; GotoGraphic nicht implementiert
-        dw      FAR_NOP_Vector          ; ExitGraphic nicht implementiert
-        dw      FAR_NOP_Vector          ; PutPixel nicht implementiert
-        dw      FAR_NOP_Vector          ; GetPixel nicht implementiert
+        dw      FAR_NOP_Vector          ; GotoGraphic not implemented
+        dw      FAR_NOP_Vector          ; ExitGraphic not implemented
+        dw      FAR_NOP_Vector          ; PutPixel not implemented
+        dw      FAR_NOP_Vector          ; GetPixel not implemented
         dw      GetPixByte
         dw      SetDrawPage             ; SetDrawPage
         dw      SetVisualPage           ; SetVisualPage
         dw      SetWriteMode
 
 ;---------------------------------------------------
-; Flags fÅr Optionen. Siehe die entsprechenden Konstanten in const.asi
+; Flags for options. See the corresponding constants in const.asi
 
 Options         dw      0
 OptText         db      9, "SVGAOPTS="
 
 ;---------------------------------------------------
-; Grî·e des Bildschirms in Bytes als LongInt (fÅrs Lîschen)
+; Size of the screen in bytes as LongInt (for clearing)
 
 ScreenBytes     dd      0
 
 ;---------------------------------------------------
-; X- und Y-Auflîsung des gerade aktiven Modus und Y-Offset der aktuelle
-; Seite.
-; BytesPerLine sind die Anzahl Bytes pro Scanzeile. Sie entsprechen
-; normalerweise MaxX (BytesPerLine ist neu mit Version 3.51, vorher
-; wurde mit MaxX gerechnet), kînnen bei VESA-Treibern aber auch unter-
-; schiedlich (grî·er) sein.
+; X and Y resolution of the currently active mode and Y offset of the
+; current page.
+; BytesPerLine is the number of bytes per scanline. It normally
+; corresponds to MaxX (BytesPerLine is new with version 3.51, previously
+; MaxX was used), but can be different (larger) for VESA drivers.
 
 MaxX            dw      0
 MaxY            dw      0
@@ -3617,7 +3608,7 @@ BytesPerLine    dw      0
 PageOfs         dw      0
 
 ;---------------------------------------------------
-; Clip-Fenster
+; Clipping window
 
 Clip_X1         dw      0
 Clip_Y1         dw      0
@@ -3625,45 +3616,44 @@ Clip_X2         dw      0
 Clip_Y2         dw      0
 
 ;---------------------------------------------------
-; Hier stehen die Farben: Hintergrundfarbe, Zeichen- und FÅllfarbe
+; Here are the colors: background color, drawing color, and fill color
 ;
 
-BkColor         db      00h             ; Kommt nach Palettenregister 0
-DrawingColor    db      0Fh             ; Zeichenfarbe
-FillColor       db      0Fh             ; FÅllfarbe
+BkColor         db      00h             ; Goes to palette register 0
+DrawingColor    db      0Fh             ; Drawing color
+FillColor       db      0Fh             ; Fill color
 
 ;---------------------------------------------------
-; Variable fÅr FloodFill.
+; Variable for FloodFill.
 
-BorderColor     db      ?               ; Begrenzungsfarbe
+BorderColor     db      ?               ; Border color
 EVEN
-StackBot        =       512             ; Unterer Teil des Stacks
-StackTop        dw      ?               ; Oberes Ende
-StackPtr        dw      ?               ; Zeiger in Stack
+StackBot        =       512             ; Lower part of the stack
+StackTop        dw      ?               ; Upper end
+StackPtr        dw      ?               ; Pointer in stack
 PrevXR          dw      ?
 CurrXR          dw      ?
 FillDir         dw      ?
 
 ;---------------------------------------------------
-; Byte in dem das Segment reingeschrieben wird. Die SegSelect-Routinen
-; verwenden dieses Byte.
+; Byte in which the segment is written. The SegSelect routines use this byte.
 
-Seg64           db      0FFh            ; -1 = Nicht gesetzt
+Seg64           db      0FFh            ; -1 = Not set
 
 ;---------------------------------------------------
-; Die Default-Farbtabelle enthÑlt 16 EintrÑge:
+; The default color table contains 16 entries:
 
-ColorTable      db      10h     ; 16 EintrÑge folgen
+ColorTable      db      10h     ; 16 entries follow
                 db      00h, 01h, 02h, 03h, 04h, 05h, 06h, 07h
                 db      08h, 09h, 0Ah, 0Bh, 0Ch, 0Dh, 0Eh, 0Fh
 
 ;---------------------------------------------------
-; WriteMode zum Linien-Zeichnen, 01 = XORMode, 00 = Normal
+; WriteMode for line drawing, 01 = XORMode, 00 = Normal
 
 WriteMode       db      0
 
 ;---------------------------------------------------
-; X und Y Koordinate des "Current Drawing Pointers"
+; X and Y coordinate of the "Current Drawing Pointer"
 
 EVEN
 
@@ -3671,23 +3661,23 @@ CursorX         dw      0
 CursorY         dw      0
 
 ;---------------------------------------------------
-; Diverse Informationen fÅr den Hardware-Font
+; Various information for the hardware font
 
 TextSizeX       dw      8               ; Pixels
 TextSizeY       dw      8               ; Pixels
-TextNum         db      00h             ; Nummer ist immer 0
+TextNum         db      00h             ; Number is always 0
 TextOrient      db      00h             ; 0 = horiz., 1 = vert.
-TextMultX       dw      01h             ; Text X-Multiplikator
-TextMultY       dw      01h             ; Text Y-Multiplikator
+TextMultX       dw      01h             ; Text X-multiplier
+TextMultY       dw      01h             ; Text Y-multiplier
 
 ;---------------------------------------------------
-; LinePattern (Pattern fÅr gesetzten LineStyle) und Linienbreite
+; LinePattern (pattern for set LineStyle) and line width
 
 LinePattern     dw      0FFFFh          ; SolidLn
 LineWidth       dw      1
 
 ;---------------------------------------------------
-; Tabelle der Bitmuster fÅr die Linestyles.
+; Table of bit patterns for the linestyles.
 
 LineStyles      dw      0FFFFh          ; SolidLn
                 dw      0CCCCh          ; DottedLn
@@ -3695,18 +3685,18 @@ LineStyles      dw      0FFFFh          ; SolidLn
                 dw      0F8F8h          ; DashedLn
 
 ;---------------------------------------------------
-; Hier steht die Nummer des gerade aktiven Fill-Patterns (0-12), wobei
-; 2-11 in der Tabelle Fillpatterns stehen, das User-Pattern mit 12 codiert
-; ist statt 0FFh) und hinter die Tabelle kopiert wird.
+; Here is the number of the currently active fill pattern (0-12), where
+; 2-11 are in the Fillpatterns table, the user pattern is coded with 12
+; instead of 0FFh) and copied behind the table.
 
 FillPatternNum  db      SolidFill
 
-; Hierher wird das aktuelle Fill-Pattern zum schnelleren Zugriff kopiert
+; The current fill pattern is copied here for faster access
 
 FillPattern     db      8 dup (?)
 
 ;---------------------------------------------------
-; FillPatterns kommen hier
+; FillPatterns come here
 
 LABEL   FillPatternTable        BYTE
         db      000h, 000h, 000h, 000h, 000h, 000h, 000h, 000h  ;Empty Fill
@@ -3722,21 +3712,20 @@ LABEL   FillPatternTable        BYTE
         db      080h, 000h, 008h, 000h, 080h, 000h, 008h, 000h  ;Wide Dot Fill
         db      088h, 000h, 022h, 000h, 088h, 000h, 022h, 000h  ;Close Dot Fill
 
-; Der letzte Eintrag ist fÅr das User-Pattern freigehalten, das hierher
-; kopiert wird.
+; The last entry is reserved for the user pattern, which is copied here.
 
 UserPattern     db      8 dup (0)
 
 ;---------------------------------------------------
-; Die Pixel-Darstellung des auszugebenden Zeichens (Hardware-Text)
+; The pixel representation of the output character (hardware text)
 
 CharShape       db      8 dup (0)
 
 ;---------------------------------------------------
-; Variablen fÅr ATI Wonder (XL):
-; ATI Identifikationsstring, der sich bei C000:0031 findet,
-; eine Tabelle der ATI-Modusnummern mit den entsprechenden Bitmasken
-; fÅr den Autodetect und die Adresse des Extended-Registers der ATI-Wonder
+; Variables for ATI Wonder (XL):
+; ATI identification string, found at C000:0031,
+; a table of ATI mode numbers with the corresponding bitmasks
+; for autodetect and the address of the extended register of the ATI Wonder
 ;
 
 ATI_Ident       db      "761295520"
@@ -3744,28 +3733,28 @@ ATI_Modes       db      61h, M640x400
                 db      62h, M640x480
                 db      63h, M800x600
                 db      64h, M1024x768
-                db      00h                     ; Endekennung
+                db      00h                     ; End marker
 Extended_Reg    dw      1CEh
 
 ;---------------------------------------------------
-; Identifikationsstring von Paradise VGA's
+; Identification string of Paradise VGAs
 
 Paradise_Ident  db      "VGA="
 
 ;---------------------------------------------------
-; Variablen zum Ansprechen der VESA-Funktionen
+; Variables for accessing VESA functions
 ;
 
-VESA_Granularity        db      1       ; GranularitÑt des Fensters
+VESA_Granularity        db      1       ; Granularity of the window
 EVEN
-VESA_Window             dw      0       ; Verwendetes Fenster
-VESA_WinFunc            dd      0       ; Zeiger auf Segmentumschalt-Routine
+VESA_Window             dw      0       ; Used window
+VESA_WinFunc            dd      0       ; Pointer to segment switch routine
 
 
 ;---------------------------------------------------
-; Die Namen der verschiedenen Modi. Auf die Namen wird Åber eine Tabelle
-; mit Zeigern auf die Strings zugegriffen, wobei zwischen den normalen
-; und den Autodetect-Modi unterschieden wird.
+; The names of the various modes. The names are accessed via a table
+; with pointers to the strings, distinguishing between normal and
+; autodetect modes.
 
 VGA256Name      db      15, "320x200x256 VGA", 0
 VGA350Name      db      16, "640x350x256 SVGA", 0
@@ -3779,83 +3768,83 @@ VGAXXXName      db      15, "Autodetect SVGA", 00
 
 
 ; -------------------------------------------------------------
-; Tabellen fÅr Autodetect
-; Eine Tabelle mit Zeigern auf die Namen
+; Tables for autodetect
+; A table with pointers to the names
 
 LABEL   AutoName WORD
-        dw      VGAXXXName      ; Modus 1
-        dw      VGA400Name      ; Modus 2
-        dw      VGA480Name      ; Modus 3
-        dw      VGA600Name      ; Modus 4
-        dw      VGA768Name      ; Modus 5
-        dw      VGA1024Name     ; Modus 6
+        dw      VGAXXXName      ; Mode 1
+        dw      VGA400Name      ; Mode 2
+        dw      VGA480Name      ; Mode 3
+        dw      VGA600Name      ; Mode 4
+        dw      VGA768Name      ; Mode 5
+        dw      VGA1024Name     ; Mode 6
 
-; Tabelle mit den Mode-Bits fÅr die Autodetect-Modi
+; Table with the mode bits for the autodetect modes
 
 LABEL   AutoMode BYTE
-        db      MAll            ; Modus 1
-        db      M640x400        ; Modus 2
-        db      M640x480        ; Modus 3
-        db      M800x600        ; Modus 4
-        db      M1024x768       ; Modus 5
-        db      M1280x1024      ; Modus 6
+        db      MAll            ; Mode 1
+        db      M640x400        ; Mode 2
+        db      M640x480        ; Mode 3
+        db      M800x600        ; Mode 4
+        db      M1024x768       ; Mode 5
+        db      M1280x1024      ; Mode 6
 
 ; --------------------------------------------------------------
-; Die Segment-Select-Routinen fÅr die verschiedenen Karten.
-; Die Tabelle wird direkt mit der Karten-Nummer indiziert.
+; The segment-select routines for the various cards.
+; The table is indexed directly with the card number.
 
 LABEL SegSwitchTable    WORD
-        dw      Nop_Vector              ; stinknormale VGA
-        dw      ET3000_SegSwitch        ; ET3000 Chipsatz
-        dw      ET4000_SegSwitch        ; ET4000 Chipsatz
-        dw      Trident_SegSwitch       ; Trident 8900 Chipsatz
-        dw      V7_SegSwitch            ; Video7 1024i oder VEGA VGA
+        dw      Nop_Vector              ; standard VGA
+        dw      ET3000_SegSwitch        ; ET3000 chipset
+        dw      ET4000_SegSwitch        ; ET4000 chipset
+        dw      Trident_SegSwitch       ; Trident 8900 chipset
+        dw      V7_SegSwitch            ; Video7 1024i or VEGA VGA
         dw      Par_SegSwitch           ; Paradise VGA
         dw      ATI_SegSwitch           ; ATI VGAWonder
         dw      Evx_SegSwitch           ; Everex
         dw      Oak_SegSwitch           ; Oak
-        dw      S3_SegSwitch            ; S3 Chipsatz
-        dw      VESA_SegSwitch2         ; VGA unterstÅtzt VESA-Standard
+        dw      S3_SegSwitch            ; S3 chipset
+        dw      VESA_SegSwitch2         ; VGA supports VESA standard
 
 ; --------------------------------------------------------------
-; SetDrawPage fÅr die verschiedenen Karten.
-; Die Tabelle wird direkt mit der Karten-Nummer indiziert.
+; SetDrawPage for the various cards.
+; The table is indexed directly with the card number.
 
 LABEL   SetDrawPageTable        WORD
-        dw      Nop_Vector              ; stinknormale VGA
-        dw      Generic_DrawPage        ; ET3000 Chipsatz
-        dw      Generic_DrawPage        ; ET4000 Chipsatz
-        dw      Generic_DrawPage        ; Trident 8900 Chipsatz
-        dw      Generic_DrawPage        ; Video7 1024i oder VEGA VGA
+        dw      Nop_Vector              ; standard VGA
+        dw      Generic_DrawPage        ; ET3000 chipset
+        dw      Generic_DrawPage        ; ET4000 chipset
+        dw      Generic_DrawPage        ; Trident 8900 chipset
+        dw      Generic_DrawPage        ; Video7 1024i or VEGA VGA
         dw      Generic_DrawPage        ; Paradise VGA
         dw      Nop_Vector              ; ATI VGAWonder
         dw      Nop_Vector              ; Everex
         dw      Nop_Vector              ; Oak
-        dw      S3_DrawPage             ; S3 Chipsatz
-        dw      Generic_DrawPage        ; VGA unterstÅtzt VESA-Standard
+        dw      S3_DrawPage             ; S3 chipset
+        dw      Generic_DrawPage        ; VGA supports VESA standard
 
 ; --------------------------------------------------------------
-; SetVisualPage fÅr die verschiedenen Karten.
-; Die Tabelle wird direkt mit der Karten-Nummer indiziert.
+; SetVisualPage for the various cards.
+; The table is indexed directly with the card number.
 
 LABEL   SetVisualPageTable      WORD
-        dw      Nop_Vector              ; stinknormale VGA
-        dw      ET3000_VisualPage       ; ET3000 Chipsatz
-        dw      ET4000_VisualPage       ; ET4000 Chipsatz
-        dw      Trident_VisualPage      ; Trident 8900 Chipsatz
-        dw      V7_VisualPage           ; Video7 1024i oder VEGA VGA
+        dw      Nop_Vector              ; standard VGA
+        dw      ET3000_VisualPage       ; ET3000 chipset
+        dw      ET4000_VisualPage       ; ET4000 chipset
+        dw      Trident_VisualPage      ; Trident 8900 chipset
+        dw      V7_VisualPage           ; Video7 1024i or VEGA VGA
         dw      Par_VisualPage          ; Paradise VGA
         dw      Nop_Vector              ; ATI VGAWonder
         dw      Nop_Vector              ; Everex
         dw      Nop_Vector              ; Oak
-        dw      S3_VisualPage           ; S3 Chipsatz
-        dw      VESA_VisualPage         ; VGA unterstÅtzt VESA-Standard
+        dw      S3_VisualPage           ; S3 chipset
+        dw      VESA_VisualPage         ; VGA supports VESA standard
 
 ; ------------------------------------------------------------
 ;
-; Tabellen mit den Werten der Betriebsarten. Aus PlatzgrÅnden und weil es
-; Vorteile hat, genau *eine* DST zu haben, sind die Werte nicht wie frÅher
-; in erweiterten DST's gespeichert.
+; Tables with the values of the modes. For space reasons and because it
+; is advantageous to have exactly *one* DST, the values are not stored
+; in extended DSTs as before.
 ;
 
 LABEL   ModeTable       TMode
@@ -4014,12 +4003,12 @@ TMode  <1280, 1024, VGA1024Name, 4F02h, 107h,   \
 
 Label   ModeTableEnd    TMode
 
-; Noch ein Zeiger auf den aktuellen Eintrag
+; Another pointer to the current entry
 
 ModePtr         dw      ModeTable               ; VGA 320x200
 
 ; -----------------------------------------------
-; Der Status-Record, der an TP Åbergeben wird.
+; The status record that is passed to TP.
 
 DST     Status <>
 
@@ -4036,5 +4025,3 @@ END Start
 ; ------------------------------------------------------------------------------
 
 
-
-
