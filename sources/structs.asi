@@ -1,11 +1,13 @@
+; [Comments translated from German to English]
+
 ; *****************************************************************************
 ; *                                                                           *
-; *                Datenstrukturen fÅr den SVGA.BGI Treiber                   *
+; *                Data structures for the SVGA.BGI driver                    *
 ; *                                                                           *
 ; * (C) 1990-94                                                               *
 ; * Ullrich von Bassewitz                                                     *
-; * ZwehrenbÅhlstra·e 33                                                      *
-; * D-72070 TÅbingen                                                          *
+; * ZwehrenbÔøΩhlstraÔøΩe 33                                                      *
+; * D-72070 TÔøΩbingen                                                          *
 ; *                                                                           *
 ; * E-Mail: uz@ibb.schwaben.de                                                *
 ; *                                                                           *
@@ -13,7 +15,7 @@
 
 
 
-; Struktur der Device-Status-Table
+; Structure of the Device-Status-Table
 
 STRUC   Status
 
@@ -26,48 +28,48 @@ STRUC   Status
         XInch           dw      10000   ; Device X Size in inches*1000
         YInch           dw      7500    ; Device Y Size in inches*1000
         Aspec           dw      ?       ; Aspect Ratio = (y_size/x_size) * 10000
-        CharSizeX       db      8       ; Zeichenhîhe
-        CharSizeY       db      8       ; Zeichenbreite
+        CharSizeX       db      8       ; Character height
+        CharSizeY       db      8       ; Character width
         Compat          dw      9090h   ; Compatibility Value
 
 ENDS    Status
 
 
 
-; Tabellenstruktur fÅr alle wichtigen Werte einer Betriebsart
+; Table structure for all important values of a video mode
 
 STRUC   TMode
 
-        XRes            dw      ?       ; Anzahl Pixel in X-Richtung
-        YRes            dw      ?       ; Anzahl Pixel in Y-Richtung
-        ModeName        dw      ?       ; Zeiger auf String mit Name
-        BIOSax          dw      ?       ; Register ax fÅr BIOS-Aufruf oder sonstiges
-        BIOSbx          dw      ?       ; Register bx fÅr BIOS-Aufruf oder sonstiges
-        CardType        db      ?       ; Nummer der Karte
-        Capabilities    db      ?       ; BitSet der unterstÅtzten Modes
-        GraphOn         dw      ?       ; zusÑtzliche spezifische Umschaltroutine
+        XRes            dw      ?       ; Number of pixels in X direction
+        YRes            dw      ?       ; Number of pixels in Y direction
+        ModeName        dw      ?       ; Pointer to string with name
+        BIOSax          dw      ?       ; Register ax for BIOS call or similar
+        BIOSbx          dw      ?       ; Register bx for BIOS call or similar
+        CardType        db      ?       ; Card number
+        Capabilities    db      ?       ; BitSet of supported modes
+        GraphOn         dw      ?       ; additional specific switch routine
 
 ENDS    TMode
 
 
-; VESA-Infoblock
+; VESA info block
 
 STRUC   VESA_InfoBlock
 
-        Mode_Attributes         dw      ?       ; Attribute des Modus
-        Win_A_Attributes        db      ?       ; Attribute von Fenster A
-        Win_B_Attributes        db      ?       ; dito, Fenster B
-        Win_Granularity         dw      ?       ; Fenster-GranularitÑt in KB
-        Win_Size                dw      ?       ; Fenstergrî·e in KB
-        Win_A_Segment           dw      ?       ; Segmentadresse Fenster A
-        Win_B_Segment           dw      ?       ; Segmentadresse Fenster B
-        WinFunc                 dd      ?       ; Zeiger auf Umschaltroutine
-        BytesPerLine            dw      ?       ; Bytes pro Zeile
+        Mode_Attributes         dw      ?       ; Mode attributes
+        Win_A_Attributes        db      ?       ; Attributes of window A
+        Win_B_Attributes        db      ?       ; ditto, window B
+        Win_Granularity         dw      ?       ; Window granularity in KB
+        Win_Size                dw      ?       ; Window size in KB
+        Win_A_Segment           dw      ?       ; Segment address window A
+        Win_B_Segment           dw      ?       ; Segment address window B
+        WinFunc                 dd      ?       ; Pointer to switch routine
+        BytesPerLine            dw      ?       ; Bytes per line
 
 ENDS    VESA_InfoBlock
 
 
-; Real-Mode Regs Struktur fÅr Real-Mode INTs aus dem Protected-Mode
+; Real-Mode Regs structure for real-mode INTs from protected mode
 
 STRUC   RealModeRegs
 
@@ -92,4 +94,3 @@ STRUC   RealModeRegs
 ENDS    RealModeRegs
 
 
-
