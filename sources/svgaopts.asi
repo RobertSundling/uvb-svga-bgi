@@ -1,11 +1,13 @@
+; [Comments translated from German to English]
+
 ; *****************************************************************************
 ; *                                                                           *
-; *       Environment-Auswertung (Optionen) fÅr den SVGA.BGI Treiber          *
+; *       Environment evaluation (options) for the SVGA.BGI driver            *
 ; *                                                                           *
 ; * (C) 1990-94                                                               *
 ; * Ullrich von Bassewitz                                                     *
-; * ZwehrenbÅhlstra·e 33                                                      *
-; * D-72070 TÅbingen                                                          *
+; * ZwehrenbÔøΩhlstraÔøΩe 33                                                      *
+; * D-72070 TÔøΩbingen                                                          *
 ; *                                                                           *
 ; * E-Mail: uz@ibb.schwaben.de                                                *
 ; *                                                                           *
@@ -13,64 +15,64 @@
 
 
 
-; Sucht im Programm-Environment nach einem String "SVGAOPTS=". Wird dieser
-; gefunden, so wird anhand des Inhalts das Options-Word entsprechend gesetzt.
-; Bisherige Optionen:
+; Searches in the program environment for a string "SVGAOPTS=". If this is
+; found, the options word is set accordingly based on the contents.
+; Options so far:
 ;
 ;       F       = OpFastVesaOff
 ;       V       = OpNoVesa
-;       3       = S3 Graphics Engine nicht benutzen
+;       3       = Do not use S3 Graphics Engine
 ;
-; ACHTUNG: Die DOS-Funktionen 51h und 62h liefern im Protected-Mode in bx
-; bereits einen Selektor! Genauso ist der Wert an Offset 2Ch im PSP-Segment
-; im Protected-Mode bereits ein Selektor!
+; ATTENTION: The DOS functions 51h and 62h already return a selector in bx
+; in protected mode! Likewise, the value at offset 2Ch in the PSP segment
+; in protected mode is already a selector!
 ;
 
 PROC    GetOpts       NEAR
 
         mov     ah, 30h
-        int     21h                     ; get dos version
-        xchg    ax, bx                  ; Version nach bx
+        int     21h                     ; get DOS version
+        xchg    ax, bx                  ; version to bx
         mov     ax, 5100h               ; get PSP < DOS 3.0
-        cmp     bl, 3                   ; Version < 3 ?
-        jb      @@L1                    ; Springe wenn ja
+        cmp     bl, 3                   ; version < 3 ?
+        jb      @@L1                    ; jump if yes
         mov     ax, 6200h               ; get PSP DOS >= 3.0
 @@L1:   int     21h
-        mov     dx, ds                  ; Datensegment retten
-        mov     ds, bx                  ; PSP Segment nach ds
-        mov     ds, [WORD ds:2Ch]       ; Environment-Segment holen
+        mov     dx, ds                  ; save data segment
+        mov     ds, bx                  ; PSP segment to ds
+        mov     ds, [WORD ds:2Ch]       ; get environment segment
 
-        mov     es, dx                  ; es zeigt aufs Datensegment
+        mov     es, dx                  ; es points to data segment
         xor     si, si
         cld
-@@L2:   mov     di, OFFSET OptText      ; String
-        mov     cl, [BYTE es:di]        ; LÑnge nach cl
-        xor     ch, ch                   ; ... in cx
-        inc     di                      ; Zeiger hinter LÑngenbyte stellen
-        repz    cmpsb                   ; Eintrag gefunden ?
-        jz      @@L4                    ; Eintrag gefunden !
-        dec     si                      ; Sonst ein Zeichen zurÅck
-@@L3:   lodsb                           ; Und nach abschlie·ender 0 suchen
-        test    al, al                  ; 0 (= Ende) ?
-        jnz     @@L3                    ; Nein, weitersuchen
-        cmp     al, [BYTE si]           ; Zweite 0 (= Tabellenende) ?
-        jne     @@L2                    ; Nein, weitersuchen
+@@L2:   mov     di, OFFSET OptText      ; string
+        mov     cl, [BYTE es:di]        ; length to cl
+        xor     ch, ch                  ; ... in cx
+        inc     di                      ; pointer behind length byte
+        repz    cmpsb                   ; entry found?
+        jz      @@L4                    ; entry found!
+        dec     si                      ; otherwise go back one character
+@@L3:   lodsb                           ; and search for terminating 0
+        test    al, al                  ; 0 (= end)?
+        jnz     @@L3                    ; no, keep searching
+        cmp     al, [BYTE si]           ; second 0 (= end of table)?
+        jne     @@L2                    ; no, keep searching
 
-; Den Environment-Eintrag nicht gefunden
+; Environment entry not found
 
-        xor     di, di                  ; Optionen lîschen
+        xor     di, di                  ; clear options
         jmp     @@L9
 
-; Environment-Eintrag gefunden
+; Environment entry found
 
-@@L4:   xor     di, di                  ; Optionen
-@@L5:   lodsb                           ; Zeichen holen
-        test    al, al                  ; String-Ende ?
-        jz      @@L99                   ; Springe wenn ja
-        cmp     al, 'F'                 ; OpFastVESAOff ?
+@@L4:   xor     di, di                  ; options
+@@L5:   lodsb                           ; get character
+        test    al, al                  ; end of string?
+        jz      @@L99                   ; jump if yes
+        cmp     al, 'F'                 ; OpFastVESAOff?
         jnz     @@L6
         or      di, OpFastVesaOff
-@@L6:   cmp     al, 'V'                 ; OpNoVesa ?
+@@L6:   cmp     al, 'V'                 ; OpNoVesa?
         jnz     @@L7
         or      di, OpNoVesa
 @@L7:   cmp     al, '3'
@@ -81,15 +83,11 @@ PROC    GetOpts       NEAR
         or      di, opUseVesaModes
 @@L9:   jmp     @@L5
 
-; Fertig, Options stehen in di
+; Done, options are in di
 
-@@L99:  mov     ds, dx                  ; Datensegment nach ds
-        mov     [Options], di           ; Optionen merken
+@@L99:  mov     ds, dx                  ; data segment to ds
+        mov     [Options], di           ; store options
         ret
 
 ENDP    GetOpts
 
-
-
-
-
